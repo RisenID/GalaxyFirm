@@ -1,0 +1,402 @@
+diff --git a/build.gradle.kts b/build.gradle.kts
+index e4d466d..94b5dde 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -58,8 +58,8 @@ val githubAccessToken = getGithubProperty("ghAccessToken")
+ 
+ allprojects {
+     repositories {
+-        google()
+         mavenLocal()
++        google()
+         mavenCentral()
+         maven("https://jitpack.io")
+         maven {
+@@ -92,8 +92,8 @@ subprojects {
+         plugins.apply("dev.rikka.tools.refine")
+         val android = project.extensions.findByName("android")
+         if (android is CommonExtension) {
+-            android.compileOptions.sourceCompatibility = JavaVersion.VERSION_21
+-            android.compileOptions.targetCompatibility = JavaVersion.VERSION_21
++            android.compileOptions.sourceCompatibility = JavaVersion.VERSION_24
++            android.compileOptions.targetCompatibility = JavaVersion.VERSION_24
+             
+             project.configurations.all {
+                 exclude(group = "androidx.core", module = "core")
+@@ -118,7 +118,7 @@ subprojects {
+ 
+     tasks.withType<KotlinCompile>().configureEach {
+         compilerOptions {
+-            jvmTarget.set(JvmTarget.JVM_21)
++            jvmTarget.set(JvmTarget.JVM_24)
+         }
+     }
+ 
+@@ -140,7 +140,6 @@ subprojects {
+                 android.publishing {
+                     singleVariant("release") {
+                         withSourcesJar()
+-                        withJavadocJar()
+                     }
+                 }
+             } else if (android is ApplicationExtension) {
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index 3d8b4a4..60dce25 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -19,23 +19,23 @@ mlKitBarcodeScanning = "18.3.1"
+ moshi = "1.15.2"
+ retrofit2 = "3.0.0"
+ rikka-refine = "4.4.0"
+-sesl-core = "1.19.0+1.0.7-sesl8+rev1"
++sesl-core = "1.19.0+1.0.29-sesl9+rev6"
+ sesl-coreKtx = "1.19.0+1.0.0-sesl8+rev0"
+-sesl-appcompat = "1.8.0+1.0.21-sesl8+rev2"
+-sesl-indexscroll = "1.0.0+1.0.0-sesl8+rev0"
+-sesl-pickerColor = "1.0.2+1.0.3-sesl8+rev0"
+-sesl-pickerBasic = "1.0.7+1.0.7-sesl8+rev2"
+-sesl-pickerApp = "1.0.6+1.0.6-sesl8+rev0"
+-sesl-preference = "1.2.1+1.0.0-sesl8+rev1"
+-sesl-material = "1.12.0+1.0.32-sesl8+rev3"
+-sesl-drawerlayout = "1.2.0+1.0.0-sesl8+rev0"
+-sesl-customview = "1.2.0-rc01+1.0.0-sesl8+rev0"
+-sesl-slidingpanelayout = "1.2.0+1.0.4-sesl8+rev1"
+-sesl-recyclerview = "1.4.0+1.0.12-sesl8+rev3"
+-sesl-fragment = "1.9.0+1.0.5-sesl8+rev1"
+-sesl-coordinator = "1.3.0+1.0.0-sesl8+rev0"
+-sesl-swiperefreshlayout = "1.2.0-alpha01+1.0.0-sesl8+rev0"
+-sesl-viewpager2 = "1.1.0+1.0.0-sesl8+rev0"
++sesl-appcompat = "1.8.0+1.0.38-sesl9+rev8"
++sesl-indexscroll = "1.0.2+1.0.2-sesl9+rev1"
++sesl-pickerColor = "1.0.8+1.0.8-sesl9+rev0"
++sesl-pickerBasic = "1.0.8+1.0.8-sesl9+rev3"
++sesl-pickerApp = "1.0.17+1.0.17-sesl9+rev2"
++sesl-preference = "1.2.1+1.0.5-sesl9+rev1"
++sesl-material = "1.14.0+1.0.47-sesl9+rev13"
++sesl-drawerlayout = "1.2.0+1.0.5-sesl9+rev1"
++sesl-customview = "1.2.0-rc01+1.0.1-sesl9+rev0"
++sesl-slidingpanelayout = "1.2.0+1.0.2-sesl9+rev0"
++sesl-recyclerview = "1.4.0+1.0.25-sesl9+rev7"
++sesl-fragment = "1.9.0+1.0.6-sesl9+rev2"
++sesl-coordinator = "1.3.0+1.0.6-sesl9+rev0"
++sesl-swiperefreshlayout = "1.2.0-alpha01+1.0.2-sesl9+rev1"
++sesl-viewpager2 = "1.1.0+1.0.5-sesl9+rev1"
+ 
+ zxing-core = "3.5.4"
+ 
+@@ -139,7 +139,6 @@ sesl-androidx = ["sesl-appcompat",
+     "sesl-preference",
+     "sesl-swiperefreshlayout",
+     "sesl-core",
+-    "sesl-coreKtx",
+     "sesl-fragment",
+     "sesl-pickerApp",
+     "sesl-viewpager2"]
+\ No newline at end of file
+diff --git a/lib/build.gradle.kts b/lib/build.gradle.kts
+index c9f4373..1648410 100644
+--- a/lib/build.gradle.kts
++++ b/lib/build.gradle.kts
+@@ -12,7 +12,6 @@ plugins {
+ android {
+     namespace = "dev.oneuiproject.oneui.design"
+     compileSdk = 37
+-    compileSdkMinor = 1
+ 
+     defaultConfig {
+         vectorDrawables {
+diff --git a/lib/src/main/java/dev/oneuiproject/oneui/layout/internal/util/ImmersiveScrollHelper.kt b/lib/src/main/java/dev/oneuiproject/oneui/layout/internal/util/ImmersiveScrollHelper.kt
+index 44fc4b0..cd6f343 100644
+--- a/lib/src/main/java/dev/oneuiproject/oneui/layout/internal/util/ImmersiveScrollHelper.kt
++++ b/lib/src/main/java/dev/oneuiproject/oneui/layout/internal/util/ImmersiveScrollHelper.kt
+@@ -1,40 +1,12 @@
+ package dev.oneuiproject.oneui.layout.internal.util
+ 
+-import android.content.Context
+-import android.graphics.Color
+ import android.os.Build
+-import android.view.Gravity.BOTTOM
+-import android.view.Gravity.CENTER_HORIZONTAL
+ import android.view.View
+-import android.view.ViewGroup
+-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+-import android.widget.FrameLayout
+ import androidx.activity.ComponentActivity
+-import androidx.annotation.ColorInt
+ import androidx.annotation.FloatRange
+ import androidx.annotation.RequiresApi
+ import androidx.annotation.RestrictTo
+-import androidx.appcompat.view.ContextThemeWrapper
+-import androidx.coordinatorlayout.widget.CoordinatorLayout
+-import androidx.core.view.NestedScrollingChild
+-import androidx.core.view.NestedScrollingChild3
+-import androidx.core.view.ViewCompat
+-import androidx.core.view.ViewCompat.SCROLL_AXIS_VERTICAL
+-import androidx.core.view.ViewCompat.TYPE_TOUCH
+-import androidx.core.view.WindowInsetsAnimationCompat
+-import androidx.core.view.WindowInsetsCompat
+-import androidx.core.view.doOnLayout
+-import androidx.core.view.updateLayoutParams
+-import androidx.core.view.updatePadding
+ import com.google.android.material.appbar.AppBarLayout
+-import com.google.android.material.appbar.SeslImmersiveScrollBehavior
+-import dev.oneuiproject.oneui.ktx.findAncestorOfType
+-import dev.oneuiproject.oneui.ktx.getThemeAttributeValue
+-import dev.oneuiproject.oneui.ktx.withAlpha
+-import dev.oneuiproject.oneui.layout.ToolbarLayout
+-import dev.oneuiproject.oneui.widget.AdaptiveCoordinatorLayout
+-import kotlin.math.max
+ 
+ @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+ @RequiresApi(Build.VERSION_CODES.R)
+@@ -49,223 +21,11 @@ internal class ImmersiveScrollHelper(
+     var isImmersiveScrollActivated = false
+         private set
+ 
+-    @get:ColorInt
+-    private val defaultBottomViewBgColor by lazy(LazyThreadSafetyMode.NONE) {
+-        activity.getThemeAttributeValue(androidx.appcompat.R.attr.roundedCornerColor)!!.data
+-    }
+-
+-    private var dummyBottomView: FrameLayout? = null
+-    private var restoreParentIndex: Int = 0
+-    private var restoreParent: ViewGroup? = null
+-    private var restoreLayoutParams: ViewGroup.LayoutParams? = null
+-    private var bottomInset = 0
+-
+-    private val insetAnimationCallback by lazy(LazyThreadSafetyMode.NONE) {
+-        object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+-
+-            private fun WindowInsetsAnimationCompat.isImeAnimation() =
+-                (typeMask and WindowInsetsCompat.Type.ime()) != 0
+-
+-            override fun onProgress(
+-                insets: WindowInsetsCompat,
+-                runningAnimations: MutableList<WindowInsetsAnimationCompat>
+-            ): WindowInsetsCompat {
+-                bottomInset = insets.bottomInset()
+-                if ((bottomView?.height ?: 0) > 0) {
+-                    dummyBottomView?.updatePadding(bottom = bottomInset)
+-                }
+-                return insets
+-            }
+-
+-            override fun onEnd(animation: WindowInsetsAnimationCompat) {
+-                val rootInsets = ViewCompat.getRootWindowInsets(appBarLayout) ?: return
+-                dummyBottomView?.updatePadding(bottom = rootInsets.bottomInset())
+-
+-                if (animation.isImeAnimation()) {
+-                    val imeBottom = rootInsets.imeBottomInset()
+-                    if (imeBottom == 0) {
+-                        appBarLayout.immersiveScrollBehavior?.apply {
+-                            cancelWindowInsetsAnimationController()
+-                            dispatchImmersiveScrollEnabled()
+-                        }
+-                    }
+-                }
+-            }
+-        }
+-    }
+-
++    fun activateImmersiveScroll() {}
+ 
+-    @RequiresApi(Build.VERSION_CODES.R)
+-    fun activateImmersiveScroll() {
+-        if (isImmersiveScrollActivated || activity.isDestroyed || activity.isFinishing) return
+-        isImmersiveScrollActivated = true
+-        appBarLayout.rootView.requestApplyInsets()
+-        appBarLayout.ensureImmersiveScrollBehavior()
+-        appBarLayout.seslSetImmersiveScroll(true)
+-        updateDummyBottomView()
+-        setupBottomView()
+-        dummyBottomView?.let {
+-            ViewCompat.setWindowInsetsAnimationCallback(it, insetAnimationCallback)
+-        }
+-        appBarLayout.doOnLayout {
+-            simulateNestedScrollDispatch()
+-        }
+-    }
+-
+-    @RequiresApi(Build.VERSION_CODES.R)
+-    fun deactivateImmersiveScroll() {
+-        if (!isImmersiveScrollActivated || activity.isDestroyed || activity.isFinishing) return
+-        isImmersiveScrollActivated = false
+-        appBarLayout.seslActivateImmersiveScroll(false, true)
+-        appBarLayout.seslImmersiveRelease()
+-        dummyBottomView?.let {
+-            ViewCompat.setWindowInsetsAnimationCallback(it, null)
+-        }
+-        clearDummyBottomView()
+-        resetCurrentBottomView()
+-        appBarLayout.rootView.requestApplyInsets()
+-    }
++    fun deactivateImmersiveScroll() {}
+ 
+     fun setBottomView(view: View?) {
+-        if (view === bottomView) return
+-        resetCurrentBottomView()
+         bottomView = view
+-        if (isImmersiveScrollActivated) {
+-            updateDummyBottomView()
+-            setupBottomView()
+-        }
+     }
+-
+-    private fun updateDummyBottomView() {
+-        if (dummyBottomView == null) {
+-            dummyBottomView = createDummyBottomView()
+-        }
+-
+-        dummyBottomView?.apply {
+-            if (parent == null) {
+-                appBarLayout.let {
+-                    (it.parent as AdaptiveCoordinatorLayout).addView(
+-                        this,
+-                        CoordinatorLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+-                    )
+-                }
+-                (layoutParams as? CoordinatorLayout.LayoutParams)?.gravity =
+-                    BOTTOM or CENTER_HORIZONTAL
+-            }
+-            appBarLayout.seslSetBottomView(this)
+-        }
+-    }
+-
+-    private fun clearDummyBottomView() {
+-        dummyBottomView?.apply {
+-            (parent as? ViewGroup)?.removeView(this)
+-            dummyBottomView = null
+-            appBarLayout.seslSetBottomView(null)
+-            appBarLayout.requestLayout()
+-        }
+-    }
+-
+-    private fun setupBottomView() {
+-        if (bottomView != null) {
+-            val bottomView = bottomView!!
+-            restoreParent = bottomView.parent as? ViewGroup
+-            restoreLayoutParams = bottomView.layoutParams
+-            restoreParentIndex = restoreParent!!.indexOfChild(bottomView)
+-            restoreParent?.apply {
+-                val restoreTransition = layoutTransition
+-                removeView(bottomView)
+-                layoutTransition = restoreTransition
+-            }
+-            dummyBottomView?.apply {
+-                addView(bottomView)
+-                setBackgroundColor(defaultBottomViewBgColor.withAlpha(bottomViewAlpha))
+-                val rootInsets = ViewCompat.getRootWindowInsets(this)
+-                val bottom = rootInsets?.bottomInset() ?: bottomInset
+-                updatePadding(bottom = bottom)
+-            }
+-            bottomView.updateLayoutParams<FrameLayout.LayoutParams> {
+-                gravity = BOTTOM or CENTER_HORIZONTAL
+-            }
+-        } else {
+-            dummyBottomView?.apply {
+-                removeAllViews()
+-                setBackgroundColor(Color.TRANSPARENT)
+-                val rootInsets = ViewCompat.getRootWindowInsets(this)
+-                val bottom = rootInsets?.bottomInset() ?: bottomInset
+-                updatePadding(bottom = bottom)
+-            }
+-        }
+-    }
+-
+-    private fun resetCurrentBottomView() {
+-        bottomView?.let {
+-            (it.parent as? ViewGroup)?.removeView(it)
+-            restoreParent?.apply {
+-                it.layoutParams = restoreLayoutParams
+-                addView(it, restoreParentIndex.coerceAtMost(childCount))
+-            }
+-        }
+-    }
+-
+-    private fun AppBarLayout.ensureImmersiveScrollBehavior() {
+-        updateLayoutParams<CoordinatorLayout.LayoutParams> {
+-            if (behavior !is SeslImmersiveScrollBehavior) {
+-                behavior = SeslImmersiveScrollBehavior(baseContext, null)
+-            }
+-            (behavior as SeslImmersiveScrollBehavior).apply {
+-                setNeedToCheckBottomViewMargin(false)
+-                setAutoRestoreTopAndBottom(false)
+-            }
+-        }
+-    }
+-
+-    private fun createDummyBottomView(): FrameLayout =
+-        FrameLayout(activity).apply {
+-            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+-        }
+-
+-    private fun WindowInsetsCompat.bottomInset(): Int {
+-        val nav = getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+-        val ime = getInsets(WindowInsetsCompat.Type.ime()).bottom
+-        return max(nav, ime)
+-    }
+-
+-    private fun WindowInsetsCompat.imeBottomInset(): Int =
+-        getInsets(WindowInsetsCompat.Type.ime()).bottom
+-
+-    // Workaround for incorrect initial collapse height of appbar
+-    // when layout contains a nested scrolling child.
+-    private fun simulateNestedScrollDispatch() {
+-        val container = appBarLayout.findAncestorOfType<ToolbarLayout>()?.mainContainer
+-        val scrollingChild = container?.findFirstNestedScrollingChild() as? NestedScrollingChild3 ?: return
+-        val consumed = IntArray(2)
+-        val offsetInWindow = IntArray(2)
+-        scrollingChild.apply {
+-            startNestedScroll(SCROLL_AXIS_VERTICAL, TYPE_TOUCH)
+-            dispatchNestedPreScroll(0, -1, consumed, offsetInWindow, TYPE_TOUCH)
+-            dispatchNestedPreScroll(0, 1, consumed, offsetInWindow, TYPE_TOUCH)
+-            stopNestedScroll(TYPE_TOUCH)
+-        }
+-    }
+-
+-    private fun View.findFirstNestedScrollingChild(): NestedScrollingChild? {
+-        if (this is NestedScrollingChild)
+-            return this
+-        if (this is ViewGroup) {
+-            for (i in 0 until childCount) {
+-                val child = getChildAt(i) ?: continue
+-                val found = child.findFirstNestedScrollingChild()
+-                if (found != null) return found
+-            }
+-        }
+-        return null
+-    }
+-
+-
+-    private val AppBarLayout.immersiveScrollBehavior get() =
+-        (layoutParams as? CoordinatorLayout.LayoutParams)?.behavior?.let { it as? SeslImmersiveScrollBehavior }
+-
+-
+-    private val baseContext: Context
+-        get() = appBarLayout.context.let { (it as? ContextThemeWrapper)?.baseContext ?: it }
+-}
+\ No newline at end of file
++}
+diff --git a/lib/src/main/java/dev/oneuiproject/oneui/widget/BottomTabLayout.kt b/lib/src/main/java/dev/oneuiproject/oneui/widget/BottomTabLayout.kt
+index 5bcfac5..61aa696 100644
+--- a/lib/src/main/java/dev/oneuiproject/oneui/widget/BottomTabLayout.kt
++++ b/lib/src/main/java/dev/oneuiproject/oneui/widget/BottomTabLayout.kt
+@@ -320,7 +320,7 @@ class BottomTabLayout(
+ 
+         if (hasOverflowItems()) {
+             addCustomTab(
+-                tabTitleRes = if (showMoreText) materialR.string.sesl_more_item_label else null,
++                tabTitleRes = if (showMoreText) androidx.appcompat.R.string.sesl_more_item_label else null,
+                 tabIconRes = R.drawable.oui_des_ic_ab_drawer,
+                 listener = { createAndShowGridDialog() }
+             ).apply{
+@@ -491,7 +491,7 @@ class BottomTabLayout(
+         if (isOverflowMenuTab(tab)) {
+             view.setContentDescription(
+                 @Suppress("PrivateResource")
+-                context.getString(materialR.string.sesl_more_item_label))
++                context.getString(androidx.appcompat.R.string.sesl_more_item_label))
+         }else{
+             view.apply {
+                 setContentDescription(if (this is TabView) null else tab.contentDescription)

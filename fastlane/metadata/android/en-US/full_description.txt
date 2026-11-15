@@ -1,0 +1,29 @@
+Know the moment a new firmware build is released for your Galaxy devices.
+
+GalaxyFirm checks Samsung's public firmware servers for every device you add and tells you when a newer build appears. It is designed to look and feel like a native One UI app.
+
+<b>Track every device</b>
+• Phones, foldables, tablets, watches and buds
+• Add a device by its model number (for example SM-S931B) and region code (for example INS or EUX)
+• See the current build, Android version, previous build and when each device was last checked
+
+<b>Instant alerts</b>
+• Background checks every 10 minutes to 3 hours
+• A notification as soon as a newer build is found
+• Optional Wi-Fi only checks and alerts for failed checks
+
+<b>Full scan history</b>
+• Every check is recorded with the devices scanned, new updates found and failures
+• Filter by new updates or failed checks
+
+<b>Private by design</b>
+• No account, no ads, no analytics, no tracking
+• Only the model number and region code are sent, straight to Samsung's firmware servers
+• All data stays on your phone; export and import backups as files
+
+<b>Open source</b>
+Source code is available on GitHub under the GPL-2.0 licence.
+
+GalaxyFirm only tells you that new firmware exists. It does not download or install firmware; install updates from your device's Software update screen as usual.
+
+GalaxyFirm is an independent app and is not affiliated with, endorsed by or sponsored by Samsung Electronics. Samsung and Galaxy are trademarks of Samsung Electronics Co., Ltd.

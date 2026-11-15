@@ -76,7 +76,7 @@ object Permissions {
     @SuppressLint("BatteryLife")
     fun batteryExemptionIntent(context: Context): Intent {
         val request = Intent(
-            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
             Uri.fromParts("package", context.packageName, null)
         )
         return if (request.resolveActivity(context.packageManager) != null) {

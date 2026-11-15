@@ -10,7 +10,6 @@ import android.os.Build
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -25,9 +24,6 @@ class ScanWorker(
     ctx: Context,
     params: WorkerParameters
 ) : CoroutineWorker(ctx, params) {
-
-    override suspend fun getForegroundInfo(): ForegroundInfo =
-        ServiceLocator.notifier(applicationContext).scanForegroundInfo()
 
     override suspend fun doWork(): Result {
         if (!hasNetwork(applicationContext)) {

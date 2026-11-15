@@ -1,7 +1,15 @@
+import java.security.KeyStore
+
 plugins {
     id("com.android.application")
     id("com.google.devtools.ksp")
 }
+
+fun firstAlias(file: File, password: String): String =
+    KeyStore.getInstance(KeyStore.getDefaultType()).run {
+        file.inputStream().use { load(it, password.toCharArray()) }
+        aliases().nextElement()
+    }
 
 android {
     namespace = "dev.risenid.galaxyfirm"
@@ -15,12 +23,26 @@ android {
         versionName = "1.0.0"
     }
 
+    val keystorePath = providers.gradleProperty("TESSERA_KEYSTORE").orNull
+    val keystorePassword = providers.gradleProperty("TESSERA_KEYSTORE_PASSWORD").orNull
+    if (keystorePath != null && keystorePassword != null) {
+        val keystoreFile = file(keystorePath)
+        signingConfigs {
+            create("release") {
+                storeFile = keystoreFile
+                storePassword = keystorePassword
+                keyAlias = providers.gradleProperty("TESSERA_KEY_ALIAS").orNull ?: firstAlias(keystoreFile, keystorePassword)
+                keyPassword = providers.gradleProperty("TESSERA_KEY_PASSWORD").orNull ?: keystorePassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

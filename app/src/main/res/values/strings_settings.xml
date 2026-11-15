@@ -15,7 +15,6 @@
     <string name="settings_auto_scan_description">GalaxyFirm checks Samsung\'s firmware servers in the background. Android may delay scans to save battery.</string>
     <string name="settings_next_scan_title">Next scan</string>
     <string name="settings_exact_alarm_warning">Scans may be delayed — allow Alarms &amp; reminders for precise timing</string>
-    <string name="settings_scan_status_notification_title">Checking for firmware updates</string>
 
     <string name="settings_notifications_title">Notification settings</string>
     <string name="settings_notifications_summary">Firmware alerts and permissions</string>
@@ -40,8 +39,8 @@
     <string name="settings_perm_restricted">Restricted</string>
     <string name="settings_permissions_description">GalaxyFirm needs these to check for firmware in the background and alert you the moment a new build is out.</string>
     <string name="settings_battery_dialog_title">Allow background activity</string>
-    <string name="settings_battery_dialog_message">GalaxyFirm needs unrestricted battery usage to check for firmware on time.</string>
-    <string name="settings_battery_dialog_allow">Allow</string>
+    <string name="settings_battery_dialog_message">GalaxyFirm needs unrestricted battery usage to check for firmware on time. In App info, open Battery and choose Unrestricted.</string>
+    <string name="settings_battery_dialog_allow">Open App info</string>
     <string name="settings_battery_dialog_not_now">Not now</string>
 
     <string name="settings_appearance_title">Appearance</string>

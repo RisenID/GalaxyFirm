@@ -3,6 +3,7 @@ package dev.risenid.galaxyfirm.work
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -28,7 +29,7 @@ class ScanAlarmReceiver : BroadcastReceiver() {
             .setRequiredNetworkType(networkType)
             .build()
         val request = OneTimeWorkRequestBuilder<ScanWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .apply { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST) }
             .setConstraints(constraints)
             .build()
         WorkManager.getInstance(appContext).enqueueUniqueWork(
