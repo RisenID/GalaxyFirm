@@ -22,6 +22,7 @@ fun formatTime(context: Context, millis: Long): String {
 }
 
 fun intervalLabel(minutes: Int): String = when (minutes) {
+    10 -> "10 min"
     15 -> "15 min"
     30 -> "30 min"
     60 -> "1 hour"
@@ -31,6 +32,7 @@ fun intervalLabel(minutes: Int): String = when (minutes) {
 }
 
 fun intervalShort(minutes: Int): String = when (minutes) {
+    10 -> "10m"
     15 -> "15m"
     30 -> "30m"
     60 -> "1h"

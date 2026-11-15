@@ -13,6 +13,10 @@
     <string name="devices_auto_scan_summary">Next scan: %1$s · Last: %2$s</string>
     <string name="devices_auto_scan_summary_off">Turned off · Last: %1$s</string>
     <string name="devices_auto_scan_none">None</string>
+    <string name="devices_pull_tip">Tip: pull down to check for updates</string>
+    <string name="devices_perm_tip_title">Background checks are limited</string>
+    <string name="devices_perm_tip_summary">Allow notifications and unrestricted battery so GalaxyFirm can alert you on time.</string>
+    <string name="devices_perm_tip_fix">Fix</string>
 
     <string name="devices_filter_all">All (%1$d)</string>
     <string name="devices_filter_new">New (%1$d)</string>

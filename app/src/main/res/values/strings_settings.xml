@@ -4,6 +4,7 @@
     <string name="settings_auto_scan_summary_on">On · About every %1$s</string>
     <string name="settings_auto_scan_summary_off">Off</string>
     <string name="settings_scan_interval_header">Scan interval</string>
+    <string name="settings_interval_10">10 min</string>
     <string name="settings_interval_15">15 min</string>
     <string name="settings_interval_30">30 min</string>
     <string name="settings_interval_60">1 hour</string>
@@ -13,8 +14,10 @@
     <string name="settings_wifi_only_summary">Scan only on unmetered networks</string>
     <string name="settings_auto_scan_description">GalaxyFirm checks Samsung\'s firmware servers in the background. Android may delay scans to save battery.</string>
     <string name="settings_next_scan_title">Next scan</string>
+    <string name="settings_exact_alarm_warning">Scans may be delayed — allow Alarms &amp; reminders for precise timing</string>
+    <string name="settings_scan_status_notification_title">Checking for firmware updates</string>
 
-    <string name="settings_notifications_title">Notifications</string>
+    <string name="settings_notifications_title">Notification settings</string>
     <string name="settings_notifications_summary">Firmware alerts and permissions</string>
     <string name="settings_notifications_summary_blocked">Blocked</string>
     <string name="settings_notifications_off_title">Notifications are turned off</string>
@@ -25,6 +28,21 @@
     <string name="settings_notify_failures_title">Scan failure alerts</string>
     <string name="settings_notify_failures_summary">Notify when a background scan fails</string>
     <string name="settings_system_notification_settings">System notification settings</string>
+
+    <string name="settings_permissions_title">Permissions</string>
+    <string name="settings_permissions_all_set">All set</string>
+    <string name="settings_perm_notifications_title">Notifications</string>
+    <string name="settings_perm_battery_title">Battery usage</string>
+    <string name="settings_perm_alarms_title">Alarms &amp; reminders</string>
+    <string name="settings_perm_allowed">Allowed</string>
+    <string name="settings_perm_not_allowed">Not allowed</string>
+    <string name="settings_perm_unrestricted">Unrestricted</string>
+    <string name="settings_perm_restricted">Restricted</string>
+    <string name="settings_permissions_description">GalaxyFirm needs these to check for firmware in the background and alert you the moment a new build is out.</string>
+    <string name="settings_battery_dialog_title">Allow background activity</string>
+    <string name="settings_battery_dialog_message">GalaxyFirm needs unrestricted battery usage to check for firmware on time.</string>
+    <string name="settings_battery_dialog_allow">Allow</string>
+    <string name="settings_battery_dialog_not_now">Not now</string>
 
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_theme_system">System default</string>
@@ -57,15 +75,22 @@
     <string name="settings_ok">OK</string>
 
     <string name="settings_header_about">About</string>
-    <string name="settings_about_title">About GalaxyFirm</string>
-    <string name="settings_version_summary">Version %1$s</string>
+    <string name="settings_about_title">About &amp; privacy</string>
+    <string name="settings_version_summary">v%1$s · Privacy policy</string>
     <string name="settings_feedback_title">Send feedback</string>
     <string name="settings_feedback_summary">Report a bug or suggestion</string>
     <string name="settings_feedback_subject">GalaxyFirm feedback</string>
     <string name="settings_no_email_app">No email app installed</string>
+    <string name="settings_privacy_policy">Privacy policy</string>
+    <string name="settings_privacy_policy_body">GalaxyFirm stores your device list and scan history only on this device; it sends only the model number and region code you enter to Samsung\'s firmware servers (fota-cloud-dn.ospserver.net and neofussvr.sslcs.cdngc.net); no account, analytics, ads or tracking; backups are files you create yourself.</string>
     <string name="settings_open_source_licenses">Open source licences</string>
-    <string name="settings_open_source_licenses_body">• tribalfs/oneui-design — Apache-2.0\n• sesl-androidx — Apache-2.0\n• sesl-material-components-android — Apache-2.0\n• AndroidX Room — Apache-2.0\n• WorkManager — Apache-2.0\n• Kotlin coroutines — Apache-2.0</string>
+    <string name="settings_open_source_licenses_body">• tribalfs/oneui-design — Apache-2.0\n• sesl-androidx — Apache-2.0\n• sesl-material-components-android — Apache-2.0\n• AndroidX Room — Apache-2.0\n• WorkManager — Apache-2.0\n• Kotlin coroutines — Apache-2.0\n\nFirmware lookup is based on Bifrost by Zachary Wander (MIT)</string>
     <string name="settings_about_disclaimer">GalaxyFirm is not affiliated with Samsung. Firmware data comes from Samsung\'s public FOTA servers and stays on your device.</string>
+
+    <plurals name="settings_permissions_need_attention">
+        <item quantity="one">%d needs attention</item>
+        <item quantity="other">%d need attention</item>
+    </plurals>
 
     <plurals name="settings_imported_devices">
         <item quantity="one">Imported %d device</item>

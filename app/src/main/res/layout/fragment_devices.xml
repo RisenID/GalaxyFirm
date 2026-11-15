@@ -22,6 +22,22 @@
             android:paddingBottom="24dp">
 
             <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:id="@+id/card_permission_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="?android:colorBackground"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <dev.oneuiproject.oneui.widget.TipsCard
+                    android:id="@+id/permission_tips_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?android:colorBackground"
@@ -88,6 +104,34 @@
                     </LinearLayout>
                 </LinearLayout>
             </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <LinearLayout
+                android:id="@+id/pull_tip_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_oui_arrow_down"
+                    app:tint="?android:attr/textColorSecondary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/devices_pull_tip"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <dev.oneuiproject.oneui.widget.MarginsTabLayout
                 android:id="@+id/filter_tabs"

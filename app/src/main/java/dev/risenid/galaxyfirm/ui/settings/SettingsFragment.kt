@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -14,7 +15,9 @@ import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.databinding.FragmentSettingsBinding
 import dev.risenid.galaxyfirm.ui.TabScreen
+import dev.risenid.galaxyfirm.util.Permissions
 import dev.risenid.galaxyfirm.util.intervalLabel
+import dev.oneuiproject.oneui.ktx.defaultSummaryColor
 import dev.oneuiproject.oneui.ktx.seslSetFillHorizontalPaddingEnabled
 import kotlinx.coroutines.launch
 
@@ -39,6 +42,9 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), TabScreen {
         }
         binding.rowNotifications.setOnClickListener {
             startActivity(Intent(requireContext(), NotificationSettingsActivity::class.java))
+        }
+        binding.rowPermissions.setOnClickListener {
+            startActivity(Intent(requireContext(), PermissionsActivity::class.java))
         }
         binding.rowAppearance.setOnClickListener {
             startActivity(Intent(requireContext(), AppearanceActivity::class.java))
@@ -79,7 +85,6 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), TabScreen {
     private fun refreshSummaries() {
         val context = requireContext()
         val settings = ServiceLocator.settings(context)
-        val notifier = ServiceLocator.notifier(context)
 
         binding.rowAutoScan.summary = if (settings.autoScan) {
             getString(R.string.settings_auto_scan_summary_on, intervalLabel(settings.intervalMinutes))
@@ -87,10 +92,25 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), TabScreen {
             getString(R.string.settings_auto_scan_summary_off)
         }
 
-        binding.rowNotifications.summary = if (notifier.canNotify()) {
+        binding.rowNotifications.summary = if (Permissions.notificationsAllowed(context)) {
             getString(R.string.settings_notifications_summary)
         } else {
             getString(R.string.settings_notifications_summary_blocked)
+        }
+
+        val missing = Permissions.missingCount(context)
+        if (missing == 0) {
+            binding.rowPermissions.summary = getString(R.string.settings_permissions_all_set)
+            binding.rowPermissions.getSummaryView().setTextColor(context.defaultSummaryColor)
+        } else {
+            binding.rowPermissions.summary = resources.getQuantityString(
+                R.plurals.settings_permissions_need_attention,
+                missing,
+                missing
+            )
+            binding.rowPermissions.getSummaryView().setTextColor(
+                ContextCompat.getColor(context, R.color.status_failed)
+            )
         }
 
         binding.rowAppearance.summary = when (settings.theme) {
@@ -101,7 +121,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings), TabScreen {
 
         val versionName = runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
-        }.getOrNull().orEmpty()
+        }.getOrNull().orEmpty().ifEmpty { "1.0.0" }
         binding.rowAbout.summary = getString(R.string.settings_version_summary, versionName)
     }
 

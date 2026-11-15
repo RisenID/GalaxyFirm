@@ -9,6 +9,7 @@ import dev.risenid.galaxyfirm.data.model.HistoryCounts
 import dev.risenid.galaxyfirm.data.model.ScanResult
 import dev.risenid.galaxyfirm.data.model.ScanSession
 import dev.risenid.galaxyfirm.data.model.ScanTrigger
+import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.data.net.FirmwareClient
 import dev.risenid.galaxyfirm.notify.Notifier
 import kotlinx.coroutines.Dispatchers
@@ -286,7 +287,7 @@ class Repository(
                     )
                     ScanOutcome(updated, DeviceStatus.UP_TO_DATE, false)
                 }
-                info.firmware != stored -> {
+                BuildVersion.isNewer(info.firmware, stored) -> {
                     val updated = device.copy(
                         previousFirmware = stored,
                         firmware = info.firmware,
@@ -300,14 +301,15 @@ class Repository(
                     ScanOutcome(updated, DeviceStatus.NEW_UPDATE, true)
                 }
                 else -> {
-                    val nextStatus = if (device.status == DeviceStatus.NEW_UPDATE) {
+                    val nextStatus = if (device.updateFoundAt != null) {
                         DeviceStatus.NEW_UPDATE
                     } else {
                         DeviceStatus.UP_TO_DATE
                     }
+                    val same = info.firmware == stored
                     val updated = device.copy(
-                        fullFirmware = info.fullFirmware,
-                        androidVersion = info.androidVersion ?: device.androidVersion,
+                        fullFirmware = if (same) info.fullFirmware else device.fullFirmware,
+                        androidVersion = if (same) info.androidVersion ?: device.androidVersion else device.androidVersion,
                         status = nextStatus,
                         lastCheckedAt = now,
                         lastError = null
@@ -317,7 +319,7 @@ class Repository(
             }
         } catch (e: Exception) {
             val updated = device.copy(
-                status = DeviceStatus.FAILED,
+                status = if (device.updateFoundAt != null) DeviceStatus.NEW_UPDATE else DeviceStatus.FAILED,
                 lastCheckedAt = now,
                 lastError = e.message ?: "Scan failed"
             )

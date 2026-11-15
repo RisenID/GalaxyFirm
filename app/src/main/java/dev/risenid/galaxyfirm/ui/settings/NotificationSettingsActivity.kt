@@ -1,29 +1,33 @@
 package dev.risenid.galaxyfirm.ui.settings
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.databinding.ActivityNotificationSettingsBinding
+import dev.risenid.galaxyfirm.notify.Notifier
+import dev.risenid.galaxyfirm.util.Permissions
 import dev.oneuiproject.oneui.ktx.seslSetFillHorizontalPaddingEnabled
 
 class NotificationSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNotificationSettingsBinding
     private val settings by lazy { ServiceLocator.settings(this) }
-    private val notifier by lazy { ServiceLocator.notifier(this) }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) {
+    ) { granted ->
+        if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+        ) {
+            Permissions.launchNotificationSettings(this)
+        }
         refreshState()
     }
 
@@ -60,7 +64,7 @@ class NotificationSettingsActivity : AppCompatActivity() {
         }
 
         binding.rowSystemNotificationSettings.setOnClickListener {
-            openSystemNotificationSettings()
+            Permissions.launchNotificationSettings(this)
         }
 
         refreshState()
@@ -72,7 +76,7 @@ class NotificationSettingsActivity : AppCompatActivity() {
     }
 
     private fun refreshState() {
-        binding.cardPermissionTip.isVisible = !notifier.canNotify()
+        binding.cardPermissionTip.isVisible = !Permissions.notificationsAllowed(this)
         if (binding.rowNotifyUpdates.isChecked != settings.notifyUpdates) {
             binding.rowNotifyUpdates.isChecked = settings.notifyUpdates
         }
@@ -89,21 +93,13 @@ class NotificationSettingsActivity : AppCompatActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else if (
+            NotificationManagerCompat.from(this).areNotificationsEnabled() &&
+            Permissions.updatesChannelBlocked(this)
+        ) {
+            Permissions.launchChannelSettings(this, Notifier.CHANNEL_UPDATES)
         } else {
-            openSystemNotificationSettings()
-        }
-    }
-
-    private fun openSystemNotificationSettings() {
-        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
-            putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-        }
-        runCatching { startActivity(intent) }.onFailure {
-            val fallback = Intent(
-                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.fromParts("package", packageName, null)
-            )
-            runCatching { startActivity(fallback) }
+            Permissions.launchNotificationSettings(this)
         }
     }
 }

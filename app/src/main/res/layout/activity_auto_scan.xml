@@ -24,6 +24,26 @@
             android:paddingHorizontal="10dp"
             android:paddingBottom="24dp">
 
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:id="@+id/card_exact_alarm_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="?android:colorBackground"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_exact_alarm_warning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_oui_error"
+                    app:iconTint="@color/status_failed"
+                    app:showTopDivider="false"
+                    app:title="@string/settings_exact_alarm_warning" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
             <dev.oneuiproject.oneui.widget.Separator
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -39,6 +59,12 @@
                     android:id="@+id/interval_group"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
+
+                    <dev.oneuiproject.oneui.widget.RadioItemView
+                        android:id="@+id/radio_10"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="@string/settings_interval_10" />
 
                     <dev.oneuiproject.oneui.widget.RadioItemView
                         android:id="@+id/radio_15"

@@ -2,15 +2,18 @@ package dev.risenid.galaxyfirm.notify
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.work.ForegroundInfo
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.data.model.Device
 
@@ -69,6 +72,38 @@ class Notifier(private val context: Context) {
         NotificationManagerCompat.from(appContext).notify(FAILURE_NOTIFICATION_ID, notification)
     }
 
+    fun scanStatusNotification(): Notification {
+        ensureChannels()
+        return NotificationCompat.Builder(appContext, CHANNEL_STATUS)
+            .setSmallIcon(R.drawable.ic_stat_update)
+            .setContentTitle(appContext.getString(R.string.settings_scan_status_notification_title))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .setSilent(true)
+            .setContentIntent(launchPendingIntent(SCAN_NOTIFICATION_ID))
+            .build()
+    }
+
+    fun scanForegroundInfo(): ForegroundInfo {
+        val notification = scanStatusNotification()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                SCAN_NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(SCAN_NOTIFICATION_ID, notification)
+        }
+    }
+
+    fun isChannelBlocked(channelId: String = CHANNEL_UPDATES): Boolean {
+        ensureChannels()
+        val manager = appContext.getSystemService(NotificationManager::class.java) ?: return false
+        val channel = manager.getNotificationChannel(channelId) ?: return false
+        return channel.importance == NotificationManager.IMPORTANCE_NONE
+    }
+
     fun canNotify(): Boolean {
         if (!NotificationManagerCompat.from(appContext).areNotificationsEnabled()) {
             return false
@@ -97,5 +132,6 @@ class Notifier(private val context: Context) {
         const val CHANNEL_UPDATES = "firmware_updates"
         const val CHANNEL_STATUS = "scan_status"
         private const val FAILURE_NOTIFICATION_ID = -1001
+        private const val SCAN_NOTIFICATION_ID = -1002
     }
 }

@@ -39,6 +39,18 @@ class Settings(context: Context) {
         get() = prefs.getLong(KEY_LAST_SCAN, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_SCAN, value).apply()
 
+    var nextScanAt: Long
+        get() = prefs.getLong(KEY_NEXT_SCAN, 0L)
+        set(value) = prefs.edit().putLong(KEY_NEXT_SCAN, value).apply()
+
+    var permissionsPrompted: Boolean
+        get() = prefs.getBoolean(KEY_PERMISSIONS_PROMPTED, false)
+        set(value) = prefs.edit().putBoolean(KEY_PERMISSIONS_PROMPTED, value).apply()
+
+    var pullTipSeen: Boolean
+        get() = prefs.getBoolean(KEY_PULL_TIP_SEEN, false)
+        set(value) = prefs.edit().putBoolean(KEY_PULL_TIP_SEEN, value).apply()
+
     var historyLimit: Int
         get() = prefs.getString(KEY_HISTORY_LIMIT, "500")?.toIntOrNull()?.coerceAtLeast(1) ?: 500
         set(value) = prefs.edit().putString(KEY_HISTORY_LIMIT, value.toString()).apply()
@@ -68,8 +80,11 @@ class Settings(context: Context) {
         const val KEY_NOTIFY_FAILURES = "notify_failures"
         const val KEY_THEME = "theme"
         const val KEY_LAST_SCAN = "last_scan_at"
+        const val KEY_NEXT_SCAN = "next_scan_at"
+        const val KEY_PERMISSIONS_PROMPTED = "permissions_prompted"
+        const val KEY_PULL_TIP_SEEN = "pull_tip_seen"
         const val KEY_HISTORY_LIMIT = "history_limit"
 
-        private val ALLOWED_INTERVALS = setOf(15, 30, 60, 120, 180)
+        private val ALLOWED_INTERVALS = setOf(10, 15, 30, 60, 120, 180)
     }
 }

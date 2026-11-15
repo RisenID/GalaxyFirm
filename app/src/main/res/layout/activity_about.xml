@@ -5,6 +5,14 @@
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_privacy_policy"
+        style="@style/OneUI.ContainedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_privacy_policy"
+        android:theme="@style/OneUI.ContainedButtonTheme" />
+
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_licenses"
         style="@style/OneUI.ContainedButton"
         android:layout_width="wrap_content"

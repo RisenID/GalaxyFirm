@@ -1,21 +1,35 @@
 package dev.risenid.galaxyfirm.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import dev.risenid.galaxyfirm.R
+import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.databinding.ActivityMainBinding
 import dev.risenid.galaxyfirm.ui.devices.DevicesFragment
 import dev.risenid.galaxyfirm.ui.history.HistoryFragment
 import dev.risenid.galaxyfirm.ui.settings.SettingsFragment
+import dev.risenid.galaxyfirm.util.Permissions
 import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var current = 0
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+        promptBatteryIfNeeded()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +53,35 @@ class MainActivity : AppCompatActivity() {
         binding.bottomTab.post { binding.bottomTab.getTabAt(current)?.select() }
         supportFragmentManager.executePendingTransactions()
         applyTitle()
+        maybePromptFirstLaunchPermissions()
+    }
+
+    private fun maybePromptFirstLaunchPermissions() {
+        val settings = ServiceLocator.settings(this)
+        if (settings.permissionsPrompted) return
+        settings.permissionsPrompted = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            promptBatteryIfNeeded()
+        }
+    }
+
+    private fun promptBatteryIfNeeded() {
+        if (Permissions.batteryUnrestricted(this)) return
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_battery_dialog_title)
+            .setMessage(R.string.settings_battery_dialog_message)
+            .setPositiveButton(R.string.settings_battery_dialog_allow) { _, _ ->
+                Permissions.launchBatteryExemption(this)
+            }
+            .setNegativeButton(R.string.settings_battery_dialog_not_now, null)
+            .show()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -19,6 +19,8 @@ import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.model.ScanTrigger
 import dev.risenid.galaxyfirm.databinding.FragmentDevicesBinding
 import dev.risenid.galaxyfirm.ui.TabScreen
+import dev.risenid.galaxyfirm.ui.settings.PermissionsActivity
+import dev.risenid.galaxyfirm.util.Permissions
 import dev.risenid.galaxyfirm.util.formatTime
 import dev.risenid.galaxyfirm.util.intervalShort
 import dev.risenid.galaxyfirm.work.ScanScheduler
@@ -58,6 +60,7 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
     private val settings by lazy { ServiceLocator.settings(requireContext()) }
     private val filter = MutableStateFlow(Filter.ALL)
     private var devices: List<Device> = emptyList()
+    private var tipDismissed = false
     private val adapter = DevicesAdapter(
         onClick = { requireContext().openDeviceDetail(it.id) },
         onLongClick = ::showItemMenu
@@ -80,11 +83,21 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentDevicesBinding.bind(view)
-        savedInstanceState?.getInt(KEY_FILTER)?.let { filter.value = Filter.entries[it] }
+        savedInstanceState?.let {
+            filter.value = Filter.entries[it.getInt(KEY_FILTER)]
+            tipDismissed = it.getBoolean(KEY_TIP_DISMISSED, false)
+        }
+        setupPermissionTip()
         setupTabs()
         binding.deviceList.layoutManager = LinearLayoutManager(requireContext())
         binding.deviceList.adapter = adapter
-        binding.swipeRefresh.setOnRefreshListener { scanAll() }
+        binding.swipeRefresh.setOnRefreshListener {
+            if (!settings.pullTipSeen) {
+                settings.pullTipSeen = true
+                binding.pullTipRow.isVisible = false
+            }
+            scanAll()
+        }
         binding.autoScanCard.setOnClickListener {
             runCatching {
                 startActivity(Intent().setClassName(requireContext(), AUTO_SCAN_ACTIVITY))
@@ -104,14 +117,46 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            bindAutoScan()
+            updatePermissionTip()
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_FILTER, filter.value.ordinal)
+        outState.putBoolean(KEY_TIP_DISMISSED, tipDismissed)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun setupPermissionTip() {
+        binding.permissionTipsCard.apply {
+            setTitle(getString(R.string.devices_perm_tip_title))
+            setSummary(getString(R.string.devices_perm_tip_summary))
+            setOnCancelClickListener {
+                tipDismissed = true
+                binding.cardPermissionTip.isVisible = false
+            }
+            addButton(getString(R.string.devices_perm_tip_fix)) {
+                startActivity(Intent(requireContext(), PermissionsActivity::class.java))
+            }
+        }
+        updatePermissionTip()
+    }
+
+    private fun updatePermissionTip() {
+        val missing = Permissions.missingCount(requireContext()) > 0
+        if (!missing) {
+            tipDismissed = false
+        }
+        binding.cardPermissionTip.isVisible = missing && !tipDismissed
     }
 
     private fun setupTabs() {
@@ -140,6 +185,7 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
         binding.autoScanSummary.text = ScanScheduler.nextRunAt(context)
             ?.let { getString(R.string.devices_auto_scan_summary, formatTime(context, it), last) }
             ?: getString(R.string.devices_auto_scan_summary_off, last)
+        binding.pullTipRow.isVisible = !settings.pullTipSeen
     }
 
     private fun render(list: List<Device>, selected: Filter, checking: Set<Long>) {
@@ -191,6 +237,7 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
 
     private companion object {
         const val KEY_FILTER = "filter"
+        const val KEY_TIP_DISMISSED = "tip_dismissed"
         const val AUTO_SCAN_ACTIVITY = "dev.risenid.galaxyfirm.ui.settings.AutoScanActivity"
     }
 }

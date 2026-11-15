@@ -37,9 +37,20 @@ class AboutActivity : AppCompatActivity() {
         binding.appInfoLayout.updateStatus = AppInfoLayout.Status.Unset
         binding.appInfoLayout.addOptionalText(getString(R.string.settings_about_disclaimer))
 
+        binding.btnPrivacyPolicy.setOnClickListener {
+            showPrivacyPolicyDialog()
+        }
         binding.btnLicenses.setOnClickListener {
             showLicensesDialog()
         }
+    }
+
+    private fun showPrivacyPolicyDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_privacy_policy)
+            .setMessage(R.string.settings_privacy_policy_body)
+            .setPositiveButton(R.string.settings_ok, null)
+            .show()
     }
 
     private fun showLicensesDialog() {

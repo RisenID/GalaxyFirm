@@ -3,9 +3,11 @@ package dev.risenid.galaxyfirm.ui.settings
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.databinding.ActivityAutoScanBinding
+import dev.risenid.galaxyfirm.util.Permissions
 import dev.risenid.galaxyfirm.util.formatStamp
 import dev.risenid.galaxyfirm.work.ScanScheduler
 import dev.oneuiproject.oneui.ktx.seslSetFillHorizontalPaddingEnabled
@@ -22,6 +24,10 @@ class AutoScanActivity : AppCompatActivity() {
         binding.scrollView.apply {
             seslSetFillHorizontalPaddingEnabled(true)
             seslSetGoToTopEnabled(true)
+        }
+
+        binding.rowExactAlarmWarning.setOnClickListener {
+            Permissions.launchExactAlarmSettings(this)
         }
 
         binding.toolbarLayout.switchBar.apply {
@@ -59,6 +65,7 @@ class AutoScanActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        ScanScheduler.apply(this, reschedule = false)
         updateUi()
     }
 
@@ -75,6 +82,7 @@ class AutoScanActivity : AppCompatActivity() {
             binding.rowWifiOnly.isChecked = settings.wifiOnly
         }
 
+        binding.cardExactAlarmWarning.isVisible = !Permissions.exactAlarmsAllowed(this)
         binding.intervalGroup.isEnabled = enabled
         binding.intervalGroup.children.forEach { it.isEnabled = enabled }
         binding.rowWifiOnly.isEnabled = enabled
@@ -89,6 +97,7 @@ class AutoScanActivity : AppCompatActivity() {
     }
 
     private fun intervalToRadioId(minutes: Int): Int = when (minutes) {
+        10 -> R.id.radio_10
         15 -> R.id.radio_15
         60 -> R.id.radio_60
         120 -> R.id.radio_120
@@ -97,6 +106,7 @@ class AutoScanActivity : AppCompatActivity() {
     }
 
     private fun radioIdToInterval(id: Int): Int = when (id) {
+        R.id.radio_10 -> 10
         R.id.radio_15 -> 15
         R.id.radio_60 -> 60
         R.id.radio_120 -> 120

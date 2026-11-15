@@ -9,6 +9,6 @@ class App : Application() {
         super.onCreate()
         AppCompatDelegate.setDefaultNightMode(ServiceLocator.settings(this).nightMode())
         ServiceLocator.notifier(this).ensureChannels()
-        ScanScheduler.apply(this)
+        ScanScheduler.apply(this, reschedule = false)
     }
 }
