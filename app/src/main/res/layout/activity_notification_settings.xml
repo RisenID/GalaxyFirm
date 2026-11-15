@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dev.oneuiproject.oneui.layout.ToolbarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toolbar_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:expanded="false"
+    app:showNavButtonAsBack="true"
+    app:title="@string/settings_notifications_title">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="always"
+        android:scrollbars="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingBottom="24dp">
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:id="@+id/card_permission_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="?android:colorBackground"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <dev.oneuiproject.oneui.widget.TipsCard
+                    android:id="@+id/tips_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:colorBackground"
+                android:orientation="vertical">
+
+                <dev.oneuiproject.oneui.widget.SwitchItemView
+                    android:id="@+id/row_notify_updates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_oui_notification_outline"
+                    app:showTopDivider="false"
+                    app:summaryOff="@string/settings_notify_updates_summary"
+                    app:summaryOn="@string/settings_notify_updates_summary"
+                    app:title="@string/settings_notify_updates_title" />
+
+                <dev.oneuiproject.oneui.widget.SwitchItemView
+                    android:id="@+id/row_notify_failures"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_oui_info_outline"
+                    app:summaryOff="@string/settings_notify_failures_summary"
+                    app:summaryOn="@string/settings_notify_failures_summary"
+                    app:title="@string/settings_notify_failures_title" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.Separator
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:colorBackground"
+                android:orientation="vertical">
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_system_notification_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_oui_settings_outline"
+                    app:showTopDivider="false"
+                    app:title="@string/settings_system_notification_settings" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</dev.oneuiproject.oneui.layout.ToolbarLayout>

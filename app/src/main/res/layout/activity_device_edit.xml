@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dev.oneuiproject.oneui.layout.ToolbarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolbar_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:expanded="false"
+    app:showNavButtonAsBack="true"
+    app:title="@string/device_edit_title_add">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="always">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingBottom="24dp">
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:colorBackground"
+                android:orientation="vertical"
+                android:paddingVertical="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingTop="12dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="?attr/colorPrimaryDark"
+                    android:textSize="13sp"
+                    android:labelFor="@id/name_input"
+                    android:text="@string/device_edit_name" />
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/name_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:maxLines="1"
+                    android:textAlignment="viewStart"
+                    android:hint="@string/device_edit_name_hint"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapWords"
+                    android:maxLength="40" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingTop="12dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="?attr/colorPrimaryDark"
+                    android:textSize="13sp"
+                    android:labelFor="@id/model_input"
+                    android:text="@string/device_edit_model" />
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/model_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:maxLines="1"
+                    android:textAlignment="viewStart"
+                    android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-"
+                    android:hint="@string/device_edit_model_hint"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapCharacters|textNoSuggestions"
+                    android:maxLength="20" />
+
+                <TextView
+                    android:id="@+id/model_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingBottom="4dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/status_failed"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    tools:text="@string/device_edit_error_model_empty" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingTop="12dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="?attr/colorPrimaryDark"
+                    android:textSize="13sp"
+                    android:labelFor="@id/csc_input"
+                    android:text="@string/device_edit_csc" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingEnd="8dp">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/csc_input"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="?android:attr/listPreferredItemPaddingStart"
+                        android:maxLines="1"
+                        android:textAlignment="viewStart"
+                        android:layout_width="0dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_weight="1"
+                        android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+                        android:hint="@string/device_edit_csc_hint"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapCharacters|textNoSuggestions"
+                        android:maxLength="3" />
+
+                    <ImageButton
+                        android:id="@+id/csc_pick"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/actionBarItemBackground"
+                        android:contentDescription="@string/device_edit_csc_pick"
+                        android:src="@drawable/ic_oui_keyboard_arrow_down"
+                        android:tooltipText="@string/device_edit_csc_pick"
+                        app:tint="?attr/actionMenuTextColor" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/csc_region"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingBottom="4dp"
+                    android:textAlignment="viewStart"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    android:textColor="?android:attr/textColorSecondary"
+                    tools:text="India" />
+
+                <TextView
+                    android:id="@+id/csc_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingBottom="4dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/status_failed"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    tools:text="@string/device_edit_error_csc_empty" />
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="?android:colorBackground"
+                android:orientation="vertical">
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/type_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:showTopDivider="false"
+                    app:title="@string/device_edit_type"
+                    app:userUpdatableSummary="true" />
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                android:text="@string/device_edit_footer"
+                android:textAlignment="viewStart"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_actions"
+        style="?attr/bottomNavigationTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_location="footer"
+        app:menu="@menu/menu_device_edit" />
+</dev.oneuiproject.oneui.layout.ToolbarLayout>

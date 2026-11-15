@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="devices_check_now">Check now</string>
+    <string name="devices_add">Add device</string>
+    <string name="devices_edit">Edit</string>
+    <string name="devices_delete">Delete</string>
+    <string name="devices_cancel">Cancel</string>
+    <string name="devices_save">Save</string>
+
+    <string name="devices_auto_scan">Auto scan</string>
+    <string name="devices_auto_scan_every">Every %1$s</string>
+    <string name="devices_auto_scan_off">Off</string>
+    <string name="devices_auto_scan_summary">Next scan: %1$s · Last: %2$s</string>
+    <string name="devices_auto_scan_summary_off">Turned off · Last: %1$s</string>
+    <string name="devices_auto_scan_none">None</string>
+
+    <string name="devices_filter_all">All (%1$d)</string>
+    <string name="devices_filter_new">New (%1$d)</string>
+    <string name="devices_filter_up_to_date">Up to date (%1$d)</string>
+    <string name="devices_filter_failed">Failed (%1$d)</string>
+
+    <string name="devices_empty_title">No devices yet</string>
+    <string name="devices_empty_hint">Add a model and region to start tracking its firmware updates.</string>
+    <string name="devices_empty_filter_title">No devices match</string>
+    <string name="devices_empty_filter_hint">Try another filter.</string>
+
+    <string name="devices_not_checked_yet">Not checked yet</string>
+    <string name="devices_checked_at">Checked %1$s</string>
+    <string name="devices_found_at">Found %1$s</string>
+    <string name="devices_checking">Checking…</string>
+
+    <string name="device_status_up_to_date">Up to date</string>
+    <string name="device_status_new">New update</string>
+    <string name="device_status_failed">Failed</string>
+    <string name="device_status_unknown">Not checked</string>
+
+    <string name="device_type_phone">Phone</string>
+    <string name="device_type_foldable">Foldable</string>
+    <string name="device_type_tablet">Tablet</string>
+    <string name="device_type_watch">Watch</string>
+    <string name="device_type_buds">Buds</string>
+
+    <string name="devices_scan_new">%1$d new updates found</string>
+    <string name="devices_scan_new_one">1 new update found</string>
+    <string name="devices_scan_failed">Couldn\'t check %1$d devices</string>
+    <string name="devices_scan_done">All devices are up to date</string>
+    <string name="devices_add_first">Add a device first</string>
+
+    <string name="device_delete_title">Delete %1$s?</string>
+    <string name="device_delete_message">You\'ll stop getting update alerts for this device. Scan history is kept.</string>
+
+    <string name="device_edit_title_add">Add device</string>
+    <string name="device_edit_title_edit">Edit device</string>
+    <string name="device_edit_name">Name</string>
+    <string name="device_edit_name_hint">My Galaxy S26 Ultra</string>
+    <string name="device_edit_model">Model number</string>
+    <string name="device_edit_model_hint">SM-S948B</string>
+    <string name="device_edit_csc">Region (CSC)</string>
+    <string name="device_edit_csc_hint">INS</string>
+    <string name="device_edit_csc_pick">Choose region</string>
+    <string name="device_edit_csc_item">%1$s (%2$s)</string>
+    <string name="device_edit_type">Device type</string>
+    <string name="device_edit_type_auto">%1$s (detected)</string>
+    <string name="device_edit_footer">Find the model number in Settings &gt; About phone. The region code is the CSC of your firmware.</string>
+    <string name="device_edit_error_model_empty">Enter a model number.</string>
+    <string name="device_edit_error_model_format">Enter a model number like SM-S948B.</string>
+    <string name="device_edit_error_csc_empty">Enter a region code.</string>
+    <string name="device_edit_error_csc_format">Region codes have 3 letters, like INS.</string>
+    <string name="device_edit_error_duplicate">This device is already in your list.</string>
+    <string name="device_edit_error_generic">Couldn\'t save the device.</string>
+    <string name="device_edit_verifying">Verifying device…</string>
+    <string name="device_edit_verify_failed_title">Couldn\'t verify device</string>
+    <string name="device_edit_verify_failed_message">No firmware was found for %1$s in %2$s. Check the model number and region.</string>
+    <string name="device_edit_verify_keep">Keep anyway</string>
+    <string name="device_edit_verify_fix">Edit details</string>
+
+    <string name="device_detail_firmware">Firmware</string>
+    <string name="device_detail_device">Device</string>
+    <string name="device_detail_current">Current firmware</string>
+    <string name="device_detail_full_build">Full build string</string>
+    <string name="device_detail_full_build_value">PDA %1$s\nCSC %2$s\nModem %3$s</string>
+    <string name="device_detail_previous">Previous firmware</string>
+    <string name="device_detail_android">Android version</string>
+    <string name="device_detail_region">Region</string>
+    <string name="device_detail_last_checked">Last checked</string>
+    <string name="device_detail_update_found">Update found</string>
+    <string name="device_detail_last_error">Last error</string>
+    <string name="device_detail_none">None</string>
+    <string name="device_detail_never">Never</string>
+    <string name="device_detail_unknown">Unknown</string>
+    <string name="device_detail_mark_seen">Mark as seen</string>
+    <string name="device_detail_copied">Copied to clipboard</string>
+    <string name="device_detail_subtitle">%1$s · %2$s</string>
+
+    <string-array name="device_csc_codes" translatable="false">
+        <item>EUX</item>
+        <item>INS</item>
+        <item>XAA</item>
+        <item>XAC</item>
+        <item>KOO</item>
+        <item>DBT</item>
+        <item>BTU</item>
+        <item>XEF</item>
+        <item>ITV</item>
+        <item>PHE</item>
+        <item>XSA</item>
+        <item>XNZ</item>
+        <item>ZTO</item>
+        <item>MXO</item>
+        <item>CHC</item>
+        <item>TGY</item>
+        <item>BRI</item>
+        <item>XSP</item>
+        <item>XME</item>
+        <item>XTC</item>
+        <item>THL</item>
+        <item>XXV</item>
+        <item>XID</item>
+        <item>SEK</item>
+        <item>TUR</item>
+        <item>XSG</item>
+        <item>XFE</item>
+    </string-array>
+    <string-array name="device_csc_regions">
+        <item>Europe</item>
+        <item>India</item>
+        <item>United States (unlocked)</item>
+        <item>Canada</item>
+        <item>South Korea</item>
+        <item>Germany</item>
+        <item>United Kingdom</item>
+        <item>France</item>
+        <item>Italy</item>
+        <item>Spain</item>
+        <item>Australia</item>
+        <item>New Zealand</item>
+        <item>Brazil</item>
+        <item>Mexico</item>
+        <item>China</item>
+        <item>Hong Kong</item>
+        <item>Taiwan</item>
+        <item>Singapore</item>
+        <item>Malaysia</item>
+        <item>Philippines</item>
+        <item>Thailand</item>
+        <item>Vietnam</item>
+        <item>Indonesia</item>
+        <item>Ukraine</item>
+        <item>Turkey</item>
+        <item>United Arab Emirates</item>
+        <item>South Africa</item>
+    </string-array>
+</resources>

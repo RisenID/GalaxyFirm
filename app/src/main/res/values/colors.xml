@@ -1,0 +1,10 @@
+<resources>
+    <color name="ic_launcher_background">#0381FE</color>
+    <color name="status_new">#1E8E3E</color>
+    <color name="status_new_container">#1F1E8E3E</color>
+    <color name="status_failed">#D93025</color>
+    <color name="status_failed_container">#1FD93025</color>
+    <color name="status_neutral">#636366</color>
+    <color name="status_neutral_container">#14000000</color>
+    <color name="chip_container">#0F000000</color>
+</resources>

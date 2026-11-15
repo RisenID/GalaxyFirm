@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:overScrollMode="always"
+    android:scrollbars="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="10dp"
+        android:paddingBottom="24dp">
+
+        <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:colorBackground"
+            android:orientation="vertical">
+
+            <dev.oneuiproject.oneui.widget.CardItemView
+                android:id="@+id/row_auto_scan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_oui_sync"
+                app:showTopDivider="false"
+                app:title="@string/settings_auto_scan_title" />
+
+            <dev.oneuiproject.oneui.widget.CardItemView
+                android:id="@+id/row_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_oui_notification_outline"
+                app:summary="@string/settings_notifications_summary"
+                app:title="@string/settings_notifications_title" />
+
+            <dev.oneuiproject.oneui.widget.CardItemView
+                android:id="@+id/row_appearance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_oui_palette"
+                app:title="@string/settings_appearance_title"
+                app:userUpdatableSummary="true" />
+
+            <dev.oneuiproject.oneui.widget.CardItemView
+                android:id="@+id/row_app_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_oui_manage_storage_outline"
+                app:summary="@string/settings_app_data_summary"
+                app:title="@string/settings_app_data_title" />
+
+        </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+        <dev.oneuiproject.oneui.widget.Separator
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_header_about" />
+
+        <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:colorBackground"
+            android:orientation="vertical">
+
+            <dev.oneuiproject.oneui.widget.CardItemView
+                android:id="@+id/row_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_oui_info_outline"
+                app:showTopDivider="false"
+                app:title="@string/settings_about_title" />
+
+            <dev.oneuiproject.oneui.widget.CardItemView
+                android:id="@+id/row_feedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_oui_email_outline"
+                app:summary="@string/settings_feedback_summary"
+                app:title="@string/settings_feedback_title" />
+
+        </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

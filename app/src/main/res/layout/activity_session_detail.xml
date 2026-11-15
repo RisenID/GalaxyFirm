@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dev.oneuiproject.oneui.layout.ToolbarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolbar_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:showNavButtonAsBack="true">
+
+    <dev.oneuiproject.oneui.widget.RoundedRecyclerView
+        android:id="@+id/result_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:colorBackground"
+        android:paddingHorizontal="10dp"
+        android:scrollbarStyle="outsideOverlay"
+        app:fillHorizontalPadding="true"
+        app:layout_location="main_content"
+        app:roundedCorners="top_left|top_right"
+        tools:listitem="@layout/item_session_result" />
+</dev.oneuiproject.oneui.layout.ToolbarLayout>

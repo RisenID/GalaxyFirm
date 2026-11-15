@@ -1,0 +1,2 @@
+-keep class dev.oneuiproject.oneui.** { *; }
+-dontwarn javax.annotation.Nullable

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">GalaxyFirm</string>
+    <string name="tab_devices">Devices</string>
+    <string name="tab_history">History</string>
+    <string name="tab_settings">Settings</string>
+    <string name="subtitle_devices">Capture your next available updates</string>
+    <string name="subtitle_history">Scan sessions and firmware events</string>
+    <string name="subtitle_settings">Background scans, alerts and backups</string>
+</resources>

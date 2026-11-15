@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="history_filter_all">All (%d)</string>
+    <string name="history_filter_new">New (%d)</string>
+    <string name="history_filter_failed">Failed (%d)</string>
+    <string name="history_today">Today</string>
+    <string name="history_yesterday">Yesterday</string>
+    <string name="history_separator">" · "</string>
+    <string name="history_badge_new">New update</string>
+    <string name="history_badge_completed">Completed</string>
+    <string name="history_badge_failed">Failed</string>
+    <string name="history_trigger_auto">Auto</string>
+    <string name="history_trigger_manual">Manual</string>
+    <string name="history_more_devices">+%d</string>
+    <string name="history_clear">Clear history</string>
+    <string name="history_clear_title">Clear history?</string>
+    <string name="history_clear_message">All scan sessions and their results will be deleted.</string>
+    <string name="history_clear_confirm">Clear</string>
+    <string name="history_cancel">Cancel</string>
+    <string name="history_empty_title">No scans yet</string>
+    <string name="history_empty_hint">Scan sessions will appear here</string>
+    <string name="history_empty_new_title">No new updates</string>
+    <string name="history_empty_new_hint">Sessions that found new firmware will appear here</string>
+    <string name="history_empty_failed_title">No failed scans</string>
+    <string name="history_empty_failed_hint">Sessions with failed checks will appear here</string>
+    <plurals name="history_devices_scanned">
+        <item quantity="one">%d device scanned</item>
+        <item quantity="other">%d devices scanned</item>
+    </plurals>
+    <plurals name="history_new_updates">
+        <item quantity="one">%d new update</item>
+        <item quantity="other">%d new updates</item>
+    </plurals>
+    <plurals name="history_up_to_date">
+        <item quantity="one">%d up to date</item>
+        <item quantity="other">%d up to date</item>
+    </plurals>
+    <plurals name="history_failed">
+        <item quantity="one">%d failed</item>
+        <item quantity="other">%d failed</item>
+    </plurals>
+    <string name="session_trigger_manual">Manual scan</string>
+    <string name="session_trigger_auto">Auto scan</string>
+    <plurals name="session_subtitle">
+        <item quantity="one">%1$s · %2$d device</item>
+        <item quantity="other">%1$s · %2$d devices</item>
+    </plurals>
+    <string name="session_new">New</string>
+    <string name="session_up_to_date">Up to date</string>
+    <string name="session_failed">Failed</string>
+    <string name="session_results">Devices</string>
+    <string name="session_status_new">New update</string>
+    <string name="session_status_up_to_date">Up to date</string>
+    <string name="session_status_failed">Failed</string>
+    <string name="session_firmware_change">%1$s → %2$s</string>
+    <string name="session_firmware_unknown">Firmware unavailable</string>
+</resources>

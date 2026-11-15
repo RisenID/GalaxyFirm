@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_device_detail_check"
+        android:icon="@drawable/ic_oui_refresh"
+        android:title="@string/devices_check_now"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_device_detail_edit"
+        android:icon="@drawable/ic_oui_edit_outline"
+        android:title="@string/devices_edit"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_device_detail_seen"
+        android:title="@string/device_detail_mark_seen"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_device_detail_delete"
+        android:title="@string/devices_delete"
+        app:showAsAction="never" />
+</menu>

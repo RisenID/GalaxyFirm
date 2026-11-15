@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <meta-data android:name="SamsungBasicInteraction" android:value="SEP10" />
+        <meta-data android:name="com.samsung.android.icon_container.has_icon_container" android:value="true" />
+        <meta-data android:name="com.samsung.android.icon_container.feature_appicon" android:value="ADAPTIVEICON_SHADOW" />
+        <meta-data android:name="theming-meta" android:value="meta_998_sesl_app" />
+        <meta-data android:name="theming-meta-xml" android:value="@xml/meta_998_sesl_app" />
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.devices.DeviceEditActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.devices.DeviceDetailActivity" />
+        <activity android:name=".ui.history.SessionDetailActivity" />
+        <activity android:name=".ui.settings.AutoScanActivity" />
+        <activity android:name=".ui.settings.NotificationSettingsActivity" />
+        <activity android:name=".ui.settings.AppearanceActivity" />
+        <activity android:name=".ui.settings.AppDataActivity" />
+        <activity android:name=".ui.settings.AboutActivity" />
+    </application>
+</manifest>

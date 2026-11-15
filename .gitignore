@@ -1,0 +1,13 @@
+.gradle/
+build/
+local.properties
+github.properties
+.idea/
+*.iml
+.DS_Store
+.kotlin/
+.oneui-src/
+captures/
+*.jks
+*.keystore
+out/
