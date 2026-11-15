@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.data.model.Device
+import dev.risenid.galaxyfirm.data.net.UpdateType
 
 class Notifier(private val context: Context) {
     private val appContext = context.applicationContext
@@ -36,10 +37,20 @@ class Notifier(private val context: Context) {
     fun notifyUpdate(device: Device) {
         if (!canNotify()) return
         ensureChannels()
-        val body = "${device.name} · ${device.model} (${device.csc})\nVersion: ${device.firmware}"
+        val title = when (device.updateType) {
+            UpdateType.MAJOR -> "Major update available"
+            UpdateType.SECURITY -> "Security update available"
+            else -> "New update available"
+        }
+        val androidSuffix = if (device.updateType == UpdateType.MAJOR && !device.androidVersion.isNullOrBlank()) {
+            " · Android ${device.androidVersion}"
+        } else {
+            ""
+        }
+        val body = "${device.name} · ${device.model} (${device.csc})\nVersion: ${device.firmware}$androidSuffix"
         val notification = NotificationCompat.Builder(appContext, CHANNEL_UPDATES)
             .setSmallIcon(R.drawable.ic_stat_update)
-            .setContentTitle("New update available")
+            .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_HIGH)

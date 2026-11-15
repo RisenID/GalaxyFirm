@@ -1,5 +1,11 @@
 package dev.risenid.galaxyfirm.data.net
 
+enum class UpdateType {
+    MAJOR,
+    SECURITY,
+    REGULAR
+}
+
 object BuildVersion {
     private const val ORDER = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -31,4 +37,16 @@ object BuildVersion {
 
     fun isNewer(candidate: String, current: String): Boolean =
         candidate != current && (compare(candidate, current)?.let { it > 0 } ?: true)
+
+    fun classify(new: String, old: String?, newAndroid: String?, oldAndroid: String?): UpdateType {
+        val newOs = newAndroid?.trim()?.substringBefore('.')?.toIntOrNull()
+        val oldOs = oldAndroid?.trim()?.substringBefore('.')?.toIntOrNull()
+        if (newOs != null && oldOs != null && newOs > oldOs) return UpdateType.MAJOR
+        val newKey = key(new)
+        val oldKey = old?.let(::key)
+        if (newKey != null && oldKey != null && newKey.major > oldKey.major) return UpdateType.MAJOR
+        val clean = new.trim().uppercase()
+        if (newKey != null && clean[clean.length - 6] == 'S') return UpdateType.SECURITY
+        return UpdateType.REGULAR
+    }
 }

@@ -26,6 +26,7 @@ A native-looking One UI app built on Samsung's own SESL widget forks.
 - **Track any Galaxy device** by model number (for example `SM-S931B`) and region / CSC code (for example `INS`, `EUX`, `XAA`). The device type (phone, foldable, tablet, watch, buds) is detected from the model number, and there is a picker of common region codes.
 - **Know what's current.** Each device shows its latest build (PDA), the full `PDA/CSC/MODEM` build string, the Android version, the previous build and when it was last checked.
 - **Instant alerts.** Background checks run every 10 minutes, 15 minutes, 30 minutes, 1 hour, 2 hours or 3 hours. You get a notification as soon as a newer build appears.
+- **Major or security?** Every update is labelled as a **Major update** (new Android or One UI version), a **Security update** (security-only maintenance release) or a regular **New update**.
 - **Full scan history.** Every check is recorded with the number of devices scanned, new updates and failures. You can filter the list and open any session for per-device results.
 - **One UI throughout.** The app uses a collapsing large title, rounded card lists, sub-tab filters, the One UI switch bar, the bottom tab bar, and light and dark themes.
 - **Private.** There is no account, no analytics and no ads. Data never leaves the phone, except for the model and region codes sent to Samsung's firmware servers.
@@ -55,9 +56,13 @@ The lookup is ported from [Bifrost](https://github.com/zacharee/Bifrost) and liv
    - "Newer" is decided from the last five characters of the PDA, compared in this order: year, month, bootloader, major and build revision.
    - The year comparison handles the alphabet wrapping round.
    - An older or identical build is never reported, so a temporary fallback to the other server can't cause a false alert.
-3. **When a new update is found**, the old build moves to *Previous firmware*, a notification is posted and the device is listed first.
-4. **The device stays "New update" until you tap *Mark as seen***, even if a later check fails.
-5. **Failed lookups** (network errors, an unknown model or region) show as **Failed** with the reason, and are retried on the next scan.
+3. **When a new update is found**, it is classified by `BuildVersion.classify`:
+   - **Major update** if the Android version went up, or the major-version character (4th from the end of the PDA, e.g. `D` in `S931BXXUDDZJB`) went up.
+   - Otherwise **Security update** if the update-type character (6th from the end) is `S`, which Samsung uses for security-only builds such as `L715FXXS1AZH4`.
+   - Otherwise a regular **New update**; `U` builds carry features and fixes as well as the security patch.
+4. **The type is shown** on the device's badge, in an *Update type* row on its detail screen (e.g. *Major update · Android 16 → 17*), in the scan history and in the notification title. The old build moves to *Previous firmware* and the device is listed first.
+5. **The device stays flagged until you tap *Mark as seen***, even if a later check fails.
+6. **Failed lookups** (network errors, an unknown model or region) show as **Failed** with the reason, and are retried on the next scan.
 
 ### Background checks
 

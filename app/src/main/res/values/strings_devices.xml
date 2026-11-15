@@ -35,6 +35,8 @@
 
     <string name="device_status_up_to_date">Up to date</string>
     <string name="device_status_new">New update</string>
+    <string name="device_status_major">Major update</string>
+    <string name="device_status_security">Security update</string>
     <string name="device_status_failed">Failed</string>
     <string name="device_status_unknown">Not checked</string>
 
@@ -81,6 +83,9 @@
     <string name="device_detail_firmware">Firmware</string>
     <string name="device_detail_device">Device</string>
     <string name="device_detail_current">Current firmware</string>
+    <string name="device_detail_update_type">Update type</string>
+    <string name="device_detail_update_type_regular">Update</string>
+    <string name="device_detail_update_type_major_android">Major update · Android %1$s → %2$s</string>
     <string name="device_detail_full_build">Full build string</string>
     <string name="device_detail_full_build_value">PDA %1$s\nCSC %2$s\nModem %3$s</string>
     <string name="device_detail_previous">Previous firmware</string>

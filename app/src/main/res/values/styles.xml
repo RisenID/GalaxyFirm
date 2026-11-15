@@ -10,6 +10,10 @@
         <item name="android:fontFamily">sec-medium</item>
         <item name="android:maxLines">1</item>
     </style>
+    <style name="Badge.Major">
+        <item name="android:background">@drawable/bg_badge_major</item>
+        <item name="android:textColor">@color/status_major</item>
+    </style>
     <style name="Badge.New">
         <item name="android:background">@drawable/bg_badge_new</item>
         <item name="android:textColor">@color/status_new</item>

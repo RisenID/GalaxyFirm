@@ -7,6 +7,7 @@
     <string name="history_yesterday">Yesterday</string>
     <string name="history_separator">" · "</string>
     <string name="history_badge_new">New update</string>
+    <string name="history_badge_major">Major update</string>
     <string name="history_badge_completed">Completed</string>
     <string name="history_badge_failed">Failed</string>
     <string name="history_trigger_auto">Auto</string>
@@ -50,6 +51,8 @@
     <string name="session_failed">Failed</string>
     <string name="session_results">Devices</string>
     <string name="session_status_new">New update</string>
+    <string name="session_status_major">Major update</string>
+    <string name="session_status_security">Security update</string>
     <string name="session_status_up_to_date">Up to date</string>
     <string name="session_status_failed">Failed</string>
     <string name="session_firmware_change">%1$s → %2$s</string>

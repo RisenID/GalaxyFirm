@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.model.ScanResult
+import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.databinding.ItemSessionResultBinding
 import dev.risenid.galaxyfirm.databinding.ItemSessionSummaryBinding
 import dev.oneuiproject.oneui.widget.Separator
@@ -73,7 +74,7 @@ class SessionResultsAdapter : ListAdapter<SessionItem, RecyclerView.ViewHolder>(
         fun bind(item: SessionItem.Result) = with(binding) {
             val result = item.result
             val context = root.context
-            val kind = StatusKind.of(result.status)
+            val kind = StatusKind.of(result)
             last = item.last
             statusIcon.bindStatus(kind)
             name.text = result.deviceName
@@ -91,7 +92,12 @@ class SessionResultsAdapter : ListAdapter<SessionItem, RecyclerView.ViewHolder>(
                 kind,
                 context.getString(
                     when (kind) {
-                        StatusKind.NEW -> R.string.session_status_new
+                        StatusKind.MAJOR -> R.string.session_status_major
+                        StatusKind.NEW -> if (result.updateType == UpdateType.SECURITY) {
+                            R.string.session_status_security
+                        } else {
+                            R.string.session_status_new
+                        }
                         StatusKind.FAILED -> R.string.session_status_failed
                         StatusKind.OK -> R.string.session_status_up_to_date
                     }

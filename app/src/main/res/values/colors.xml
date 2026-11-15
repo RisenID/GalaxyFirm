@@ -1,5 +1,7 @@
 <resources>
     <color name="ic_launcher_background">#0381FE</color>
+    <color name="status_major">#0072DE</color>
+    <color name="status_major_container">#1F0072DE</color>
     <color name="status_new">#1E8E3E</color>
     <color name="status_new_container">#1F1E8E3E</color>
     <color name="status_failed">#D93025</color>

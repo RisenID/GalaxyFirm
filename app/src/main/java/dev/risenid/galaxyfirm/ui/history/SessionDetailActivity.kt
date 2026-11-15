@@ -78,6 +78,7 @@ class SessionDetailActivity : AppCompatActivity() {
             trigger = ScanTrigger.entries.getOrElse(getIntExtra(EXTRA_TRIGGER, 0)) { ScanTrigger.MANUAL },
             deviceCount = getIntExtra(EXTRA_DEVICE_COUNT, 0),
             newCount = getIntExtra(EXTRA_NEW_COUNT, 0),
+            majorCount = getIntExtra(EXTRA_MAJOR_COUNT, 0),
             upToDateCount = getIntExtra(EXTRA_UP_TO_DATE_COUNT, 0),
             failedCount = getIntExtra(EXTRA_FAILED_COUNT, 0),
             firstModel = null,
@@ -91,6 +92,7 @@ class SessionDetailActivity : AppCompatActivity() {
         private const val EXTRA_TRIGGER = "trigger"
         private const val EXTRA_DEVICE_COUNT = "device_count"
         private const val EXTRA_NEW_COUNT = "new_count"
+        private const val EXTRA_MAJOR_COUNT = "major_count"
         private const val EXTRA_UP_TO_DATE_COUNT = "up_to_date_count"
         private const val EXTRA_FAILED_COUNT = "failed_count"
 
@@ -101,6 +103,7 @@ class SessionDetailActivity : AppCompatActivity() {
                 .putExtra(EXTRA_TRIGGER, session.trigger.ordinal)
                 .putExtra(EXTRA_DEVICE_COUNT, session.deviceCount)
                 .putExtra(EXTRA_NEW_COUNT, session.newCount)
+                .putExtra(EXTRA_MAJOR_COUNT, session.majorCount)
                 .putExtra(EXTRA_UP_TO_DATE_COUNT, session.upToDateCount)
                 .putExtra(EXTRA_FAILED_COUNT, session.failedCount)
     }

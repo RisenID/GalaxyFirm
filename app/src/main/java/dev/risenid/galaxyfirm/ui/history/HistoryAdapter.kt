@@ -87,6 +87,7 @@ class HistoryAdapter(
                 kind,
                 context.getString(
                     when (kind) {
+                        StatusKind.MAJOR -> R.string.history_badge_major
                         StatusKind.NEW -> R.string.history_badge_new
                         StatusKind.FAILED -> R.string.history_badge_failed
                         StatusKind.OK -> R.string.history_badge_completed

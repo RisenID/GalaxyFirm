@@ -19,6 +19,7 @@ import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
+import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.databinding.ActivityDeviceDetailBinding
 import dev.risenid.galaxyfirm.util.formatStamp
 import dev.oneuiproject.oneui.ktx.semToast
@@ -94,10 +95,15 @@ class DeviceDetailActivity : AppCompatActivity() {
         } else {
             binding.headerFirmware.setTextColor(secondaryColor)
         }
-        binding.badge.bindBadge(device.status)
+        binding.badge.bindBadge(device.status, device.updateType)
         binding.badge.isInvisible = busy
         binding.progress.isVisible = busy
         binding.rowCurrent.summary = device.firmware ?: getString(R.string.devices_not_checked_yet)
+        val isNew = device.status == DeviceStatus.NEW_UPDATE
+        binding.rowUpdateType.isVisible = isNew
+        if (isNew) {
+            binding.rowUpdateType.summary = updateTypeSummary(device)
+        }
         binding.rowFullBuild.summary = device.fullFirmware?.let(::formatBuild) ?: getString(R.string.device_detail_unknown)
         binding.rowPrevious.summary = device.previousFirmware ?: getString(R.string.device_detail_none)
         binding.rowAndroid.summary = device.androidVersion ?: getString(R.string.device_detail_unknown)
@@ -111,6 +117,20 @@ class DeviceDetailActivity : AppCompatActivity() {
         binding.rowError.isVisible = error != null
         binding.rowError.summary = error
         invalidateOptionsMenu()
+    }
+
+    private fun updateTypeSummary(device: Device): String = when (device.updateType) {
+        UpdateType.MAJOR -> {
+            val oldOs = device.previousAndroidVersion
+            val newOs = device.androidVersion
+            if (!oldOs.isNullOrBlank() && !newOs.isNullOrBlank() && oldOs != newOs) {
+                getString(R.string.device_detail_update_type_major_android, oldOs, newOs)
+            } else {
+                getString(R.string.device_status_major)
+            }
+        }
+        UpdateType.SECURITY -> getString(R.string.device_status_security)
+        else -> getString(R.string.device_detail_update_type_regular)
     }
 
     private fun formatBuild(full: String): String {

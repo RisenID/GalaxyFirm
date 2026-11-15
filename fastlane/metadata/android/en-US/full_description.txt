@@ -10,6 +10,7 @@ GalaxyFirm checks Samsung's public firmware servers for every device you add and
 <b>Instant alerts</b>
 • Background checks every 10 minutes to 3 hours
 • A notification as soon as a newer build is found
+• Every update labelled as a major update, a security update or a regular update
 • Optional Wi-Fi only checks and alerts for failed checks
 
 <b>Full scan history</b>

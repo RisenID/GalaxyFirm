@@ -5,6 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import dev.risenid.galaxyfirm.data.net.UpdateType
 
 enum class DeviceType {
     PHONE,
@@ -52,8 +53,10 @@ data class Device(
     val firmware: String? = null,
     val fullFirmware: String? = null,
     val previousFirmware: String? = null,
+    val previousAndroidVersion: String? = null,
     val androidVersion: String? = null,
     val status: DeviceStatus = DeviceStatus.UNKNOWN,
+    val updateType: UpdateType? = null,
     val lastCheckedAt: Long? = null,
     val updateFoundAt: Long? = null,
     val lastError: String? = null,
@@ -67,6 +70,7 @@ data class ScanSession(
     val trigger: ScanTrigger,
     val deviceCount: Int,
     val newCount: Int,
+    val majorCount: Int = 0,
     val upToDateCount: Int,
     val failedCount: Int,
     val firstModel: String?,
@@ -92,6 +96,7 @@ data class ScanResult(
     val model: String,
     val csc: String,
     val status: DeviceStatus,
+    val updateType: UpdateType? = null,
     val firmware: String?,
     val previousFirmware: String?,
     val error: String?
@@ -137,4 +142,11 @@ class Converters {
     @TypeConverter
     fun toScanTrigger(value: String): ScanTrigger =
         runCatching { ScanTrigger.valueOf(value) }.getOrDefault(ScanTrigger.MANUAL)
+
+    @TypeConverter
+    fun fromUpdateType(value: UpdateType?): String? = value?.name
+
+    @TypeConverter
+    fun toUpdateType(value: String?): UpdateType? =
+        value?.let { runCatching { UpdateType.valueOf(it) }.getOrNull() }
 }

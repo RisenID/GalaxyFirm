@@ -1,4 +1,6 @@
 <resources>
+    <color name="status_major">#5AA9FF</color>
+    <color name="status_major_container">#335AA9FF</color>
     <color name="status_new">#5BD07A</color>
     <color name="status_new_container">#335BD07A</color>
     <color name="status_failed">#FF6B60</color>

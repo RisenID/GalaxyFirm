@@ -14,6 +14,7 @@ import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.model.DeviceType
 import dev.risenid.galaxyfirm.data.model.ScanSession
+import dev.risenid.galaxyfirm.data.net.UpdateType
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -61,9 +62,13 @@ internal val DeviceType.label: Int
         DeviceType.BUDS -> R.string.device_type_buds
     }
 
-internal fun TextView.bindBadge(status: DeviceStatus) {
+internal fun TextView.bindBadge(status: DeviceStatus, updateType: UpdateType? = null) {
     val (background, color, label) = when (status) {
-        DeviceStatus.NEW_UPDATE -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_new)
+        DeviceStatus.NEW_UPDATE -> when (updateType) {
+            UpdateType.MAJOR -> Triple(R.drawable.bg_badge_major, R.color.status_major, R.string.device_status_major)
+            UpdateType.SECURITY -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_security)
+            else -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_new)
+        }
         DeviceStatus.FAILED -> Triple(R.drawable.bg_badge_failed, R.color.status_failed, R.string.device_status_failed)
         DeviceStatus.UP_TO_DATE -> Triple(R.drawable.bg_badge_neutral, R.color.status_neutral, R.string.device_status_up_to_date)
         DeviceStatus.UNKNOWN -> Triple(R.drawable.bg_badge_neutral, R.color.status_neutral, R.string.device_status_unknown)

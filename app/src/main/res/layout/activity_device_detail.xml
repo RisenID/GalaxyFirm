@@ -99,6 +99,15 @@
                     app:title="@string/device_detail_current" />
 
                 <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_update_type"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:title="@string/device_detail_update_type" />
+
+                <dev.oneuiproject.oneui.widget.CardItemView
                     android:id="@+id/row_full_build"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

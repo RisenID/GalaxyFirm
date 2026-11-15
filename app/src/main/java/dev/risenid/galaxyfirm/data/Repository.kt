@@ -11,6 +11,7 @@ import dev.risenid.galaxyfirm.data.model.ScanSession
 import dev.risenid.galaxyfirm.data.model.ScanTrigger
 import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.data.net.FirmwareClient
+import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.notify.Notifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -92,6 +93,7 @@ class Repository(
         deviceDao.update(
             device.copy(
                 status = DeviceStatus.UP_TO_DATE,
+                updateType = null,
                 updateFoundAt = null
             )
         )
@@ -116,6 +118,7 @@ class Repository(
             }
             outcomes.forEach { deviceDao.update(it.device) }
             val newCount = outcomes.count { it.changed }
+            val majorCount = outcomes.count { it.changed && it.device.updateType == UpdateType.MAJOR }
             val upToDateCount = outcomes.count { it.sessionStatus == DeviceStatus.UP_TO_DATE }
             val failedCount = outcomes.count { it.sessionStatus == DeviceStatus.FAILED }
             val primary = (outcomes.firstOrNull { it.changed } ?: outcomes.first()).device
@@ -124,6 +127,7 @@ class Repository(
                 trigger = trigger,
                 deviceCount = outcomes.size,
                 newCount = newCount,
+                majorCount = majorCount,
                 upToDateCount = upToDateCount,
                 failedCount = failedCount,
                 firstModel = primary.model,
@@ -137,6 +141,7 @@ class Repository(
                     model = outcome.device.model,
                     csc = outcome.device.csc,
                     status = outcome.sessionStatus,
+                    updateType = if (outcome.changed) outcome.device.updateType else null,
                     firmware = outcome.device.firmware,
                     previousFirmware = outcome.device.previousFirmware,
                     error = outcome.device.lastError
@@ -188,8 +193,10 @@ class Repository(
                 .put("firmware", device.firmware ?: JSONObject.NULL)
                 .put("fullFirmware", device.fullFirmware ?: JSONObject.NULL)
                 .put("previousFirmware", device.previousFirmware ?: JSONObject.NULL)
+                .put("previousAndroidVersion", device.previousAndroidVersion ?: JSONObject.NULL)
                 .put("androidVersion", device.androidVersion ?: JSONObject.NULL)
                 .put("status", device.status.name)
+                .put("updateType", device.updateType?.name ?: JSONObject.NULL)
                 .put("lastCheckedAt", device.lastCheckedAt ?: JSONObject.NULL)
                 .put("updateFoundAt", device.updateFoundAt ?: JSONObject.NULL)
             array.put(item)
@@ -232,6 +239,8 @@ class Repository(
             val status = obj.optNullableString("status")
                 ?.let { runCatching { DeviceStatus.valueOf(it) }.getOrNull() }
                 ?: DeviceStatus.UNKNOWN
+            val updateType = obj.optNullableString("updateType")
+                ?.let { runCatching { UpdateType.valueOf(it) }.getOrNull() }
             val device = Device(
                 name = name,
                 model = model,
@@ -240,8 +249,10 @@ class Repository(
                 firmware = obj.optNullableString("firmware"),
                 fullFirmware = obj.optNullableString("fullFirmware"),
                 previousFirmware = obj.optNullableString("previousFirmware"),
+                previousAndroidVersion = obj.optNullableString("previousAndroidVersion"),
                 androidVersion = obj.optNullableString("androidVersion"),
                 status = status,
+                updateType = updateType,
                 lastCheckedAt = obj.optNullableLong("lastCheckedAt"),
                 updateFoundAt = obj.optNullableLong("updateFoundAt")
             )
@@ -282,18 +293,27 @@ class Repository(
                         fullFirmware = info.fullFirmware,
                         androidVersion = info.androidVersion,
                         status = DeviceStatus.UP_TO_DATE,
+                        updateType = null,
                         lastCheckedAt = now,
                         lastError = null
                     )
                     ScanOutcome(updated, DeviceStatus.UP_TO_DATE, false)
                 }
                 BuildVersion.isNewer(info.firmware, stored) -> {
+                    val updateType = BuildVersion.classify(
+                        info.firmware,
+                        stored,
+                        info.androidVersion,
+                        device.androidVersion
+                    )
                     val updated = device.copy(
                         previousFirmware = stored,
+                        previousAndroidVersion = device.androidVersion,
                         firmware = info.firmware,
                         fullFirmware = info.fullFirmware,
                         androidVersion = info.androidVersion ?: device.androidVersion,
                         status = DeviceStatus.NEW_UPDATE,
+                        updateType = updateType,
                         lastCheckedAt = now,
                         updateFoundAt = now,
                         lastError = null
@@ -311,6 +331,7 @@ class Repository(
                         fullFirmware = if (same) info.fullFirmware else device.fullFirmware,
                         androidVersion = if (same) info.androidVersion ?: device.androidVersion else device.androidVersion,
                         status = nextStatus,
+                        updateType = if (nextStatus == DeviceStatus.NEW_UPDATE) device.updateType else null,
                         lastCheckedAt = now,
                         lastError = null
                     )
@@ -318,8 +339,10 @@ class Repository(
                 }
             }
         } catch (e: Exception) {
+            val nextStatus = if (device.updateFoundAt != null) DeviceStatus.NEW_UPDATE else DeviceStatus.FAILED
             val updated = device.copy(
-                status = if (device.updateFoundAt != null) DeviceStatus.NEW_UPDATE else DeviceStatus.FAILED,
+                status = nextStatus,
+                updateType = if (nextStatus == DeviceStatus.NEW_UPDATE) device.updateType else null,
                 lastCheckedAt = now,
                 lastError = e.message ?: "Scan failed"
             )

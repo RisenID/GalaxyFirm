@@ -79,7 +79,7 @@ class DevicesAdapter(
             }
             binding.model.text = device.model
             binding.csc.text = device.csc
-            binding.badge.bindBadge(device.status)
+            binding.badge.bindBadge(device.status, device.updateType)
             binding.badge.isInvisible = row.checking
             binding.progress.isVisible = row.checking
             val found = device.updateFoundAt?.takeIf { device.status == DeviceStatus.NEW_UPDATE }
