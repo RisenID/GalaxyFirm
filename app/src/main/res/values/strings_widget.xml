@@ -1,0 +1,25 @@
+<resources>
+    <string name="widget_description">Firmware status of your Galaxy devices at a glance</string>
+    <string name="widget_refresh">Check for updates</string>
+    <string name="widget_empty">Add a device in GalaxyFirm</string>
+    <string name="widget_summary_up_to_date">All up to date</string>
+    <string name="widget_summary_no_devices">No devices</string>
+    <string name="widget_summary_separator">" · "</string>
+    <plurals name="widget_summary_updates">
+        <item quantity="one">%d update</item>
+        <item quantity="other">%d updates</item>
+    </plurals>
+    <plurals name="widget_summary_soon">
+        <item quantity="one">%d coming soon</item>
+        <item quantity="other">%d coming soon</item>
+    </plurals>
+    <plurals name="widget_summary_failed">
+        <item quantity="one">%d failed</item>
+        <item quantity="other">%d failed</item>
+    </plurals>
+    <string name="widget_preview_summary">1 update · 1 coming soon</string>
+    <string name="widget_preview_phone" translatable="false">Galaxy S26 Ultra</string>
+    <string name="widget_preview_phone_firmware" translatable="false">S948BXXS2AZK1</string>
+    <string name="widget_preview_watch" translatable="false">Galaxy Watch8</string>
+    <string name="widget_preview_watch_firmware" translatable="false">L330FXXU1AYJ2</string>
+</resources>

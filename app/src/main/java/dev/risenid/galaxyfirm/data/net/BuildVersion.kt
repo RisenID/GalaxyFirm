@@ -35,6 +35,18 @@ object BuildVersion {
         }
     }
 
+    fun isPlausiblePda(pda: String, model: String? = null): Boolean {
+        val clean = pda.trim().uppercase()
+        if (clean.length !in 9..20 || !PDA_PATTERN.matches(clean) || key(clean) == null) return false
+        val prefix = model?.let(::pdaPrefix)
+        return prefix == null || clean.startsWith(prefix)
+    }
+
+    fun pdaPrefix(model: String): String? = MODEL_PREFIX.find(model.trim().uppercase().substringAfter('-'))?.value
+
+    private val PDA_PATTERN = Regex("^[A-Z][A-Z0-9]*\\d[A-Z0-9]*$")
+    private val MODEL_PREFIX = Regex("^[A-Z]+\\d+[A-Z]?")
+
     fun isNewer(candidate: String, current: String): Boolean =
         candidate != current && (compare(candidate, current)?.let { it > 0 } ?: true)
 

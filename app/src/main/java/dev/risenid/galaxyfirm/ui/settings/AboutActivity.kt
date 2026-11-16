@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.NestedScrollView
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.databinding.ActivityAboutBinding
 import dev.oneuiproject.oneui.layout.AppInfoLayout
@@ -35,6 +36,8 @@ class AboutActivity : AppCompatActivity() {
         }
 
         binding.appInfoLayout.updateStatus = AppInfoLayout.Status.Unset
+        (upperLayout?.parent as? NestedScrollView)?.isNestedScrollingEnabled = false
+        binding.appInfoLayout.findViewById<View>(oneuiR.id.app_info_version)?.let { EasterEgg(this).attach(it) }
         binding.appInfoLayout.addOptionalText(getString(R.string.settings_about_disclaimer))
 
         binding.btnPrivacyPolicy.setOnClickListener {

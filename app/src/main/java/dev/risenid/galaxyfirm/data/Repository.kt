@@ -1,14 +1,17 @@
 package dev.risenid.galaxyfirm.data
 
 import dev.risenid.galaxyfirm.data.db.AppDatabase
+import dev.risenid.galaxyfirm.data.model.AlertLevel
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceCounts
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.model.DeviceType
+import dev.risenid.galaxyfirm.data.model.DigestItem
 import dev.risenid.galaxyfirm.data.model.HistoryCounts
 import dev.risenid.galaxyfirm.data.model.ScanResult
 import dev.risenid.galaxyfirm.data.model.ScanSession
 import dev.risenid.galaxyfirm.data.model.ScanTrigger
+import dev.risenid.galaxyfirm.data.model.alerts
 import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.data.net.FirmwareClient
 import dev.risenid.galaxyfirm.data.net.FirmwareException
@@ -19,6 +22,7 @@ import dev.risenid.galaxyfirm.data.net.androidVersion
 import dev.risenid.galaxyfirm.data.net.pda
 import dev.risenid.galaxyfirm.data.net.releasedAt
 import dev.risenid.galaxyfirm.notify.Notifier
+import dev.risenid.galaxyfirm.util.ThisDevice
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -34,6 +38,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
+data class RegionBuild(val csc: String, val firmware: String)
+
 class Repository(
     private val db: AppDatabase,
     private val client: FirmwareClient,
@@ -42,6 +48,7 @@ class Repository(
 ) {
     private val deviceDao = db.deviceDao()
     private val historyDao = db.historyDao()
+    private val digestDao = db.digestDao()
     private val scanMutex = Mutex()
     private val _scanning = MutableStateFlow(false)
 
@@ -49,7 +56,15 @@ class Repository(
     val sessions: Flow<List<ScanSession>> = historyDao.observeSessions()
     val scanning: StateFlow<Boolean> = _scanning.asStateFlow()
 
-    suspend fun addDevice(name: String, model: String, csc: String, type: DeviceType): Result<Long> =
+    suspend fun addDevice(
+        name: String,
+        model: String,
+        csc: String,
+        type: DeviceType,
+        installedFirmware: String? = null,
+        isThisDevice: Boolean = false,
+        alertLevel: AlertLevel = AlertLevel.ALL
+    ): Result<Long> =
         withContext(Dispatchers.IO) {
             val cleanModel = model.trim().uppercase()
             val cleanCsc = csc.trim().uppercase()
@@ -66,7 +81,10 @@ class Repository(
                         name = cleanName,
                         model = cleanModel,
                         csc = cleanCsc,
-                        type = type
+                        type = type,
+                        installedFirmware = installedFirmware?.trim()?.uppercase()?.ifEmpty { null },
+                        isThisDevice = isThisDevice,
+                        alertLevel = alertLevel.name
                     )
                 )
             }.recoverCatching {
@@ -85,6 +103,10 @@ class Repository(
                 csc = cleanCsc
             )
         )
+    }
+
+    suspend fun setAlertLevel(id: Long, level: AlertLevel) = withContext(Dispatchers.IO) {
+        deviceDao.setAlertLevel(id, level.name)
     }
 
     suspend fun deleteDevice(device: Device) = withContext(Dispatchers.IO) {
@@ -160,12 +182,7 @@ class Repository(
             historyDao.insertResults(results)
             settings.lastScanAt = System.currentTimeMillis()
             historyDao.trim(settings.historyLimit)
-            if (settings.notifyUpdates) {
-                outcomes.filter { it.changed }.forEach { notifier.notifyUpdate(it.device) }
-            }
-            if (settings.notifyUpcoming) {
-                outcomes.filter { it.upcomingChanged }.forEach { notifier.notifyUpcoming(it.device) }
-            }
+            alert(outcomes)
             if (settings.notifyFailures && failedCount > 0 && trigger == ScanTrigger.AUTO) {
                 notifier.notifyFailures(failedCount)
             }
@@ -180,14 +197,55 @@ class Repository(
         val device = deviceDao.getById(id) ?: return@withContext null
         val outcome = evaluateDevice(device)
         deviceDao.update(outcome.device)
-        if (outcome.changed && settings.notifyUpdates) {
-            notifier.notifyUpdate(outcome.device)
-        }
-        if (outcome.upcomingChanged && settings.notifyUpcoming) {
-            notifier.notifyUpcoming(outcome.device)
-        }
+        alert(listOf(outcome))
         outcome.device
     }
+
+    suspend fun otherRegions(model: String, codes: List<String>): List<RegionBuild> = coroutineScope {
+        val semaphore = Semaphore(8)
+        codes.map { code ->
+            async { semaphore.withPermit { client.publicFirmware(model, code)?.let { RegionBuild(code, it.firmware) } } }
+        }.awaitAll().filterNotNull().sortedWith { a, b -> BuildVersion.compare(b.firmware, a.firmware) ?: 0 }
+    }
+
+    suspend fun postDigest() = withContext(Dispatchers.IO) {
+        val items = digestDao.getAll()
+            .groupBy { it.deviceId to it.kind }
+            .map { (_, group) -> group.last() }
+        if (items.isNotEmpty()) notifier.notifyDigest(items)
+        digestDao.clear()
+    }
+
+    suspend fun clearDigest() = withContext(Dispatchers.IO) {
+        digestDao.clear()
+    }
+
+    private suspend fun alert(outcomes: List<ScanOutcome>) {
+        val available = outcomes.filter { settings.notifyUpdates && it.changed && it.device.alerts.allows(it.device.updateType) }
+            .map { it.device }
+        val upcoming = outcomes.filter { settings.notifyUpcoming && it.upcomingChanged && it.device.alerts.allows(it.device.upcomingType) }
+            .map { it.device }
+        if (!settings.digest) {
+            available.forEach(notifier::notifyUpdate)
+            upcoming.forEach(notifier::notifyUpcoming)
+            return
+        }
+        val now = System.currentTimeMillis()
+        val items = available.map { it.digestItem(DigestItem.AVAILABLE, it.firmware, it.updateType, now) } +
+            upcoming.map { it.digestItem(DigestItem.UPCOMING, it.upcomingFirmware, it.upcomingType, now) }
+        if (items.isNotEmpty()) digestDao.insert(items)
+    }
+
+    private fun Device.digestItem(kind: String, build: String?, type: UpdateType?, now: Long) = DigestItem(
+        deviceId = id,
+        deviceName = name,
+        model = model,
+        csc = csc,
+        firmware = build.orEmpty(),
+        kind = kind,
+        updateType = type,
+        createdAt = now
+    )
 
     suspend fun sessionResults(sessionId: Long): List<ScanResult> = withContext(Dispatchers.IO) {
         historyDao.getResults(sessionId)
@@ -221,6 +279,9 @@ class Repository(
                 .put("upcomingFoundAt", device.upcomingFoundAt ?: JSONObject.NULL)
                 .put("releasedAt", device.releasedAt ?: JSONObject.NULL)
                 .put("upcomingReleasedAt", device.upcomingReleasedAt ?: JSONObject.NULL)
+                .put("installedFirmware", device.installedFirmware ?: JSONObject.NULL)
+                .put("isThisDevice", device.isThisDevice)
+                .put("alertLevel", device.alertLevel)
             array.put(item)
         }
         JSONObject()
@@ -281,7 +342,10 @@ class Repository(
                 upcomingType = obj.optNullableUpdateType("upcomingType"),
                 upcomingFoundAt = obj.optNullableLong("upcomingFoundAt"),
                 releasedAt = obj.optNullableLong("releasedAt"),
-                upcomingReleasedAt = obj.optNullableLong("upcomingReleasedAt")
+                upcomingReleasedAt = obj.optNullableLong("upcomingReleasedAt"),
+                installedFirmware = obj.optNullableString("installedFirmware")?.trim()?.uppercase(),
+                isThisDevice = obj.optBoolean("isThisDevice") && ThisDevice.current?.matches(model, csc) == true,
+                alertLevel = AlertLevel.of(obj.optNullableString("alertLevel")).name
             )
             deviceDao.insert(parsed.copy(updateType = parsed.updateType ?: inferUpdateType(parsed)))
             imported++
@@ -315,7 +379,13 @@ class Repository(
         return BuildVersion.classify(firmware, device.previousFirmware, device.androidVersion, device.previousAndroidVersion)
     }
 
-    private suspend fun evaluateDevice(device: Device): ScanOutcome {
+    private fun Device.withInstalledBuild(): Device {
+        val here = ThisDevice.current?.takeIf { it.matches(model, csc) } ?: return this
+        return copy(isThisDevice = true, installedFirmware = here.installedPda ?: installedFirmware)
+    }
+
+    private suspend fun evaluateDevice(original: Device): ScanOutcome {
+        val device = original.withInstalledBuild()
         val now = System.currentTimeMillis()
         return try {
             val lookup = client.lookup(device.model, device.csc)

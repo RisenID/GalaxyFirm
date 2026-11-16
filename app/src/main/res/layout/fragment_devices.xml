@@ -22,6 +22,22 @@
             android:paddingBottom="24dp">
 
             <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:id="@+id/card_this_phone_tip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="?android:colorBackground"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <dev.oneuiproject.oneui.widget.TipsCard
+                    android:id="@+id/this_phone_tips_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
                 android:id="@+id/card_permission_tip"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -35,6 +35,21 @@ class Settings(context: Context) {
         get() = prefs.getBoolean(KEY_NOTIFY_FAILURES, false)
         set(value) = prefs.edit().putBoolean(KEY_NOTIFY_FAILURES, value).apply()
 
+    var notifyMode: String
+        get() = prefs.getString(KEY_NOTIFY_MODE, MODE_INSTANT)?.takeIf { it == MODE_DIGEST } ?: MODE_INSTANT
+        set(value) = prefs.edit().putString(KEY_NOTIFY_MODE, value).apply()
+
+    val digest: Boolean
+        get() = notifyMode == MODE_DIGEST
+
+    var digestHour: Int
+        get() = prefs.getInt(KEY_DIGEST_HOUR, 9).coerceIn(0, 23)
+        set(value) = prefs.edit().putInt(KEY_DIGEST_HOUR, value).apply()
+
+    var thisPhoneTipDismissed: Boolean
+        get() = prefs.getBoolean(KEY_THIS_PHONE_TIP_DISMISSED, false)
+        set(value) = prefs.edit().putBoolean(KEY_THIS_PHONE_TIP_DISMISSED, value).apply()
+
     var theme: String
         get() = prefs.getString(KEY_THEME, "system") ?: "system"
         set(value) = prefs.edit().putString(KEY_THEME, value).apply()
@@ -83,7 +98,12 @@ class Settings(context: Context) {
         const val KEY_NOTIFY_UPDATES = "notify_updates"
         const val KEY_NOTIFY_UPCOMING = "notify_upcoming"
         const val KEY_NOTIFY_FAILURES = "notify_failures"
+        const val KEY_NOTIFY_MODE = "notify_mode"
+        const val KEY_DIGEST_HOUR = "digest_hour"
+        const val KEY_THIS_PHONE_TIP_DISMISSED = "this_phone_tip_dismissed"
         const val KEY_THEME = "theme"
+        const val MODE_INSTANT = "instant"
+        const val MODE_DIGEST = "digest"
         const val KEY_LAST_SCAN = "last_scan_at"
         const val KEY_NEXT_SCAN = "next_scan_at"
         const val KEY_PERMISSIONS_PROMPTED = "permissions_prompted"

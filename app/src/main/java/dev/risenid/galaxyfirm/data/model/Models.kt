@@ -1,10 +1,12 @@
 package dev.risenid.galaxyfirm.data.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
+import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.data.net.UpdateType
 
 enum class DeviceType {
@@ -33,6 +35,24 @@ enum class DeviceStatus {
     UP_TO_DATE,
     NEW_UPDATE,
     FAILED
+}
+
+enum class AlertLevel {
+    ALL,
+    MAJOR_SECURITY,
+    MAJOR,
+    NONE;
+
+    fun allows(type: UpdateType?): Boolean = when (this) {
+        ALL -> true
+        MAJOR_SECURITY -> type == UpdateType.MAJOR || type == UpdateType.SECURITY
+        MAJOR -> type == UpdateType.MAJOR
+        NONE -> false
+    }
+
+    companion object {
+        fun of(value: String?): AlertLevel = entries.firstOrNull { it.name == value } ?: ALL
+    }
 }
 
 enum class ScanTrigger {
@@ -66,8 +86,43 @@ data class Device(
     val upcomingType: UpdateType? = null,
     val upcomingFoundAt: Long? = null,
     val releasedAt: Long? = null,
-    val upcomingReleasedAt: Long? = null
+    val upcomingReleasedAt: Long? = null,
+    val installedFirmware: String? = null,
+    @ColumnInfo(defaultValue = "0") val isThisDevice: Boolean = false,
+    @ColumnInfo(defaultValue = "ALL") val alertLevel: String = AlertLevel.ALL.name
 )
+
+val Device.alerts: AlertLevel
+    get() = AlertLevel.of(alertLevel)
+
+fun Device.updateReadyToInstall(): Boolean {
+    val available = firmware ?: return false
+    val installed = installedFirmware ?: return false
+    return BuildVersion.isNewer(available, installed)
+}
+
+fun Device.installUpdateType(): UpdateType? {
+    if (!updateReadyToInstall()) return null
+    return BuildVersion.classify(firmware.orEmpty(), installedFirmware, androidVersion, null)
+}
+
+@Entity(tableName = "digest_items")
+data class DigestItem(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val deviceId: Long,
+    val deviceName: String,
+    val model: String,
+    val csc: String,
+    val firmware: String,
+    val kind: String,
+    val updateType: UpdateType?,
+    val createdAt: Long
+) {
+    companion object {
+        const val AVAILABLE = "AVAILABLE"
+        const val UPCOMING = "UPCOMING"
+    }
+}
 
 @Entity(tableName = "scan_sessions")
 data class ScanSession(

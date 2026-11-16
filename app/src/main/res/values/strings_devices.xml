@@ -17,6 +17,10 @@
     <string name="devices_perm_tip_title">Background checks are limited</string>
     <string name="devices_perm_tip_summary">Allow notifications and unrestricted battery so GalaxyFirm can alert you on time.</string>
     <string name="devices_perm_tip_fix">Fix</string>
+    <string name="devices_this_phone_tip_title">Track this phone?</string>
+    <string name="devices_this_phone_tip_summary">%1$s · %2$s</string>
+    <string name="devices_this_phone_add">Add</string>
+    <string name="devices_this_phone_name">This phone</string>
 
     <string name="devices_filter_all">All (%1$d)</string>
     <string name="devices_filter_new">New (%1$d)</string>
@@ -42,6 +46,7 @@
     <string name="device_status_soon">Coming soon</string>
     <string name="device_status_failed">Failed</string>
     <string name="device_status_unknown">Not checked</string>
+    <string name="device_status_ready">Ready to install</string>
 
     <string name="device_type_phone">Phone</string>
     <string name="device_type_foldable">Foldable</string>
@@ -70,6 +75,12 @@
     <string name="device_edit_csc_item">%1$s (%2$s)</string>
     <string name="device_edit_type">Device type</string>
     <string name="device_edit_type_auto">%1$s (detected)</string>
+    <string name="device_edit_this_phone">This phone</string>
+    <string name="device_edit_installed">Installed build</string>
+    <string name="device_edit_installed_hint">e.g. S931BXXUDDZJB</string>
+    <string name="device_edit_installed_auto">Read from this phone on every check</string>
+    <string name="device_edit_error_installed_format">Enter a build number like %1$sXXU1AYA1.</string>
+    <string name="device_edit_error_installed_generic">Enter a valid build number.</string>
     <string name="device_edit_footer">Find the model number in Settings &gt; About phone. The region code is the CSC of your firmware.</string>
     <string name="device_edit_error_model_empty">Enter a model number.</string>
     <string name="device_edit_error_model_format">Enter a model number like SM-S948B.</string>
@@ -106,6 +117,38 @@
     <string name="device_detail_mark_seen">Mark as seen</string>
     <string name="device_detail_copied">Copied to clipboard</string>
     <string name="device_detail_subtitle">%1$s · %2$s</string>
+    <string name="device_detail_installed">Installed build</string>
+    <string name="device_detail_installed_behind">%1$s\nUpdate ready to install</string>
+    <string name="device_detail_release_notes">Release notes</string>
+    <string name="device_detail_samsung_notes">Samsung release notes</string>
+    <string name="device_detail_samsung_notes_summary">What\'s new in each build for this model and region</string>
+    <string name="device_detail_security_bulletin">Security bulletin</string>
+    <string name="device_detail_security_bulletin_summary">Monthly security patch details from Samsung</string>
+    <string name="device_detail_no_browser">No browser app installed</string>
+    <string name="device_detail_other_regions">Other regions</string>
+    <string name="device_detail_other_regions_summary">See which regions have newer builds</string>
+
+    <string name="device_alerts_title">Alerts for this device</string>
+    <string name="device_alerts_all">All updates</string>
+    <string name="device_alerts_major_security">Major and security only</string>
+    <string name="device_alerts_major">Major only</string>
+    <string name="device_alerts_off">Off</string>
+
+    <string name="device_regions_loading">Checking regions…</string>
+    <string name="device_regions_empty">No other region has a published build for this model.</string>
+    <string name="device_regions_newer">Newer</string>
+    <string name="device_regions_same">Same</string>
+    <string name="device_regions_older">Older</string>
+    <string name="device_regions_track">Track this region</string>
+    <string name="device_regions_track_message">Add %1$s for %2$s to your devices?</string>
+    <string name="device_regions_name">%1$s (%2$s)</string>
+    <string name="device_regions_added">Added to your devices</string>
+
+    <string name="device_digest_line">%1$s · %2$s · %3$s</string>
+    <plurals name="device_digest_title">
+        <item quantity="one">%d firmware update</item>
+        <item quantity="other">%d firmware updates</item>
+    </plurals>
 
     <string-array name="device_csc_codes" translatable="false">
         <item>EUX</item>

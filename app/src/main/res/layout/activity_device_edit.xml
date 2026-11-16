@@ -23,6 +23,24 @@
             android:paddingBottom="24dp">
 
             <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:id="@+id/this_phone_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="?android:colorBackground"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/this_phone_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_oui_phone_outline"
+                    app:showTopDivider="false"
+                    app:title="@string/device_edit_this_phone" />
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?android:colorBackground"
@@ -117,7 +135,7 @@
                         android:layout_weight="1"
                         android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
                         android:hint="@string/device_edit_csc_hint"
-                        android:imeOptions="actionDone"
+                        android:imeOptions="actionNext"
                         android:inputType="textCapCharacters|textNoSuggestions"
                         android:maxLength="3" />
 
@@ -155,6 +173,54 @@
                     android:textSize="13sp"
                     android:visibility="gone"
                     tools:text="@string/device_edit_error_csc_empty" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingTop="12dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="?attr/colorPrimaryDark"
+                    android:textSize="13sp"
+                    android:labelFor="@id/installed_input"
+                    android:text="@string/device_edit_installed" />
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/installed_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:maxLines="1"
+                    android:textAlignment="viewStart"
+                    android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+                    android:hint="@string/device_edit_installed_hint"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapCharacters|textNoSuggestions"
+                    android:maxLength="20" />
+
+                <TextView
+                    android:id="@+id/installed_note"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingBottom="4dp"
+                    android:text="@string/device_edit_installed_auto"
+                    android:textAlignment="viewStart"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/installed_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                    android:paddingBottom="4dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/status_failed"
+                    android:textSize="13sp"
+                    android:visibility="gone"
+                    tools:text="@string/device_edit_error_installed_generic" />
             </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
 
             <dev.oneuiproject.oneui.widget.RoundedLinearLayout
@@ -170,6 +236,13 @@
                     android:layout_height="wrap_content"
                     app:showTopDivider="false"
                     app:title="@string/device_edit_type"
+                    app:userUpdatableSummary="true" />
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/alerts_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:title="@string/device_alerts_title"
                     app:userUpdatableSummary="true" />
             </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
 

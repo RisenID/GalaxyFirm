@@ -16,19 +16,24 @@ import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceCounts
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
+import dev.risenid.galaxyfirm.data.model.DeviceType
 import dev.risenid.galaxyfirm.data.model.ScanTrigger
 import dev.risenid.galaxyfirm.databinding.FragmentDevicesBinding
 import dev.risenid.galaxyfirm.ui.TabScreen
 import dev.risenid.galaxyfirm.ui.settings.PermissionsActivity
 import dev.risenid.galaxyfirm.util.Permissions
+import dev.risenid.galaxyfirm.util.ThisDevice
 import dev.risenid.galaxyfirm.util.formatTime
 import dev.risenid.galaxyfirm.util.intervalShort
+import dev.risenid.galaxyfirm.util.userDeviceName
 import dev.risenid.galaxyfirm.work.ScanScheduler
 import com.google.android.material.tabs.TabLayout
 import dev.oneuiproject.oneui.ktx.semToast
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import dev.oneuiproject.oneui.R as iconsR
 
 class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
@@ -62,8 +67,9 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
     private val repository by lazy { ServiceLocator.repository(requireContext()) }
     private val settings by lazy { ServiceLocator.settings(requireContext()) }
     private val filter = MutableStateFlow(Filter.ALL)
-    private var devices: List<Device> = emptyList()
+    private var devices: List<Device>? = null
     private var tipDismissed = false
+    private var thisPhone: ThisDevice? = null
     private val adapter = DevicesAdapter(
         onClick = { requireContext().openDeviceDetail(it.id) },
         onLongClick = ::showItemMenu
@@ -91,6 +97,11 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
             tipDismissed = it.getBoolean(KEY_TIP_DISMISSED, false)
         }
         setupPermissionTip()
+        viewLifecycleOwner.lifecycleScope.launch {
+            thisPhone = withContext(Dispatchers.IO) { ThisDevice.current }
+            thisPhone?.let(::setupThisPhoneTip)
+            updateThisPhoneTip()
+        }
         setupTabs()
         binding.deviceList.layoutManager = LinearLayoutManager(requireContext())
         binding.deviceList.adapter = adapter
@@ -162,6 +173,41 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
         binding.cardPermissionTip.isVisible = missing && !tipDismissed
     }
 
+    private fun setupThisPhoneTip(phone: ThisDevice) {
+        binding.thisPhoneTipsCard.apply {
+            setTitle(getString(R.string.devices_this_phone_tip_title))
+            setSummary(getString(R.string.devices_this_phone_tip_summary, phone.model, phone.csc))
+            setOnCancelClickListener {
+                settings.thisPhoneTipDismissed = true
+                binding.cardThisPhoneTip.isVisible = false
+            }
+            addButton(getString(R.string.devices_this_phone_add)) { addThisPhone(phone) }
+        }
+    }
+
+    private fun updateThisPhoneTip() {
+        val phone = thisPhone
+        val list = devices
+        binding.cardThisPhoneTip.isVisible = phone != null && list != null && !settings.thisPhoneTipDismissed &&
+            list.none { phone.matches(it.model, it.csc) }
+    }
+
+    private fun addThisPhone(phone: ThisDevice) {
+        val context = requireContext()
+        val name = context.userDeviceName() ?: getString(R.string.devices_this_phone_name)
+        deviceScope.launch {
+            repository.addDevice(
+                name = name,
+                model = phone.model,
+                csc = phone.csc,
+                type = DeviceType.guess(phone.model),
+                installedFirmware = phone.installedPda,
+                isThisDevice = true
+            ).onSuccess(repository::checkDevice)
+                .onFailure { context.semToast(context.getString(R.string.device_edit_error_duplicate)) }
+        }
+    }
+
     private fun setupTabs() {
         val tabs = binding.filterTabs
         Filter.entries.forEach { tabs.addTab(tabs.newTab().setText(getString(it.label, 0)), false) }
@@ -193,6 +239,7 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
 
     private fun render(list: List<Device>, selected: Filter, checking: Set<Long>) {
         devices = list
+        updateThisPhoneTip()
         val counts = repository.counts(list)
         Filter.entries.forEach { binding.filterTabs.getTabAt(it.ordinal)?.text = getString(it.label, it.count(counts)) }
         binding.filterTabs.requestLayout()
@@ -209,7 +256,7 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
     }
 
     private fun scanAll() {
-        if (devices.isEmpty()) {
+        if (devices.isNullOrEmpty()) {
             binding.swipeRefresh.isRefreshing = false
             requireContext().semToast(getString(R.string.devices_add_first))
             return

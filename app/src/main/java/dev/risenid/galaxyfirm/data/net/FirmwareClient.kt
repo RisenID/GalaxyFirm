@@ -109,6 +109,10 @@ class FirmwareClient(private val fusClient: FusClient = FusClient()) {
         )
     }
 
+    suspend fun publicFirmware(model: String, csc: String): FirmwareInfo? = withContext(Dispatchers.IO) {
+        runCatching { fetchFota(model.trim().uppercase(), csc.trim().uppercase()) }.getOrNull()
+    }
+
     private suspend fun fetchHistory(model: String, csc: String): List<FusBinary> = try {
         fusClient.history(model, csc).filter { it.pda.isNotEmpty() }.distinctBy { it.pda }
     } catch (e: CancellationException) {

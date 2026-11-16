@@ -1,9 +1,12 @@
 package dev.risenid.galaxyfirm.ui.settings
 
 import android.Manifest
+import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.text.format.DateFormat
+import androidx.appcompat.app.AlertDialog
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
@@ -11,9 +14,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
+import dev.risenid.galaxyfirm.data.Settings
 import dev.risenid.galaxyfirm.databinding.ActivityNotificationSettingsBinding
 import dev.risenid.galaxyfirm.notify.Notifier
 import dev.risenid.galaxyfirm.util.Permissions
+import dev.risenid.galaxyfirm.util.formatTime
+import dev.risenid.galaxyfirm.work.DigestScheduler
+import java.util.Calendar
 import dev.oneuiproject.oneui.ktx.seslSetFillHorizontalPaddingEnabled
 
 class NotificationSettingsActivity : AppCompatActivity() {
@@ -70,6 +77,9 @@ class NotificationSettingsActivity : AppCompatActivity() {
             }
         }
 
+        binding.rowAlertStyle.setOnClickListener { pickAlertStyle() }
+        binding.rowDigestTime.setOnClickListener { pickDigestTime() }
+
         binding.rowSystemNotificationSettings.setOnClickListener {
             Permissions.launchNotificationSettings(this)
         }
@@ -93,7 +103,48 @@ class NotificationSettingsActivity : AppCompatActivity() {
         if (binding.rowNotifyFailures.isChecked != settings.notifyFailures) {
             binding.rowNotifyFailures.isChecked = settings.notifyFailures
         }
+        bindAlertStyle()
     }
+
+    private fun bindAlertStyle() {
+        binding.rowAlertStyle.summary = getString(
+            if (settings.digest) R.string.settings_alert_style_digest else R.string.settings_alert_style_instant
+        )
+        binding.rowDigestTime.isVisible = settings.digest
+        binding.rowDigestTime.summary = formatTime(this, hourMillis(settings.digestHour))
+    }
+
+    private fun pickAlertStyle() {
+        val modes = arrayOf(Settings.MODE_INSTANT, Settings.MODE_DIGEST)
+        val labels = arrayOf(getString(R.string.settings_alert_style_instant), getString(R.string.settings_alert_style_digest))
+        AlertDialog.Builder(this)
+            .setTitle(R.string.settings_alert_style_title)
+            .setSingleChoiceItems(labels, modes.indexOf(settings.notifyMode)) { dialog, which ->
+                if (settings.notifyMode != modes[which]) {
+                    settings.notifyMode = modes[which]
+                    DigestScheduler.apply(this)
+                    bindAlertStyle()
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.settings_cancel, null)
+            .show()
+    }
+
+    private fun pickDigestTime() {
+        TimePickerDialog(this, { _, hour, _ ->
+            if (settings.digestHour != hour) {
+                settings.digestHour = hour
+                DigestScheduler.apply(this)
+                bindAlertStyle()
+            }
+        }, settings.digestHour, 0, DateFormat.is24HourFormat(this)).show()
+    }
+
+    private fun hourMillis(hour: Int): Long = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, 0)
+    }.timeInMillis
 
     private fun handleAllowNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&

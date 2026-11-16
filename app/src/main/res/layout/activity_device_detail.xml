@@ -99,6 +99,13 @@
                     app:title="@string/device_detail_available" />
 
                 <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_installed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:title="@string/device_detail_installed" />
+
+                <dev.oneuiproject.oneui.widget.CardItemView
                     android:id="@+id/row_released"
                     android:clickable="false"
                     android:focusable="false"
@@ -212,6 +219,14 @@
                     app:title="@string/device_detail_region" />
 
                 <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_other_regions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:drawableEnd="@drawable/ic_chevron_end"
+                    app:summary="@string/device_detail_other_regions_summary"
+                    app:title="@string/device_detail_other_regions" />
+
+                <dev.oneuiproject.oneui.widget.CardItemView
                     android:id="@+id/row_last_checked"
                     android:clickable="false"
                     android:focusable="false"
@@ -235,6 +250,35 @@
                     android:layout_height="wrap_content"
                     android:visibility="gone"
                     app:title="@string/device_detail_last_error" />
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <dev.oneuiproject.oneui.widget.Separator
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/device_detail_release_notes" />
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:colorBackground"
+                android:orientation="vertical">
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_release_notes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:drawableEnd="@drawable/ic_chevron_end"
+                    app:showTopDivider="false"
+                    app:summary="@string/device_detail_samsung_notes_summary"
+                    app:title="@string/device_detail_samsung_notes" />
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_security_bulletin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:drawableEnd="@drawable/ic_chevron_end"
+                    app:summary="@string/device_detail_security_bulletin_summary"
+                    app:title="@string/device_detail_security_bulletin" />
             </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

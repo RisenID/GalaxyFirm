@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sec-bold"
+            android:gravity="center"
+            android:text="@string/settings_egg_title"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/egg_box"
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_egg_box"
+            android:fontFamily="sec-bold"
+            android:gravity="center"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="32sp" />
+
+        <androidx.appcompat.widget.SeslProgressBar
+            android:id="@+id/egg_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:max="100" />
+
+        <TextView
+            android:id="@+id/egg_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_chip"
+            android:fontFamily="monospace"
+            android:gravity="bottom"
+            android:padding="16dp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/egg_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="16sp"
+            android:visibility="invisible" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/egg_reboot"
+            style="@style/OneUI.ContainedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:minWidth="200dp"
+            android:text="@string/settings_egg_reboot"
+            android:theme="@style/OneUI.ContainedPrimaryColorButtonTheme"
+            android:visibility="invisible" />
+    </LinearLayout>
+</FrameLayout>

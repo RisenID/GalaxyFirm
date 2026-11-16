@@ -10,9 +10,12 @@ class BootReceiver : BroadcastReceiver() {
         when (intent?.action) {
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
-            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED,
+            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> ScanScheduler.apply(context, reschedule = false)
             Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED -> ScanScheduler.apply(context, reschedule = false)
+            Intent.ACTION_TIMEZONE_CHANGED -> {
+                ScanScheduler.apply(context, reschedule = false)
+                DigestScheduler.apply(context)
+            }
         }
     }
 }

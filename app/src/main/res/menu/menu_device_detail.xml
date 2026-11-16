@@ -17,6 +17,10 @@
         android:visible="false"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menu_device_detail_alerts"
+        android:title="@string/device_alerts_title"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_device_detail_delete"
         android:title="@string/devices_delete"
         app:showAsAction="never" />

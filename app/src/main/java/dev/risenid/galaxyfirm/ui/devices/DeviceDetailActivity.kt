@@ -19,6 +19,8 @@ import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
+import dev.risenid.galaxyfirm.data.model.alerts
+import dev.risenid.galaxyfirm.data.model.updateReadyToInstall
 import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.databinding.ActivityDeviceDetailBinding
 import dev.risenid.galaxyfirm.data.model.DeviceType
@@ -52,6 +54,12 @@ class DeviceDetailActivity : AppCompatActivity() {
         binding.rowCurrent.copyable { it.firmware }
         binding.rowFullBuild.copyable { it.fullFirmware }
         binding.rowUpcoming.copyable { it.upcomingFirmware }
+        binding.rowInstalled.copyable { it.installedFirmware }
+        binding.rowOtherRegions.setOnClickListener { device?.let { RegionsSheet.show(supportFragmentManager, it.id) } }
+        binding.rowReleaseNotes.setOnClickListener {
+            device?.let { openUrl("https://doc.samsungmobile.com/${it.model}/${it.csc}/doc.html") }
+        }
+        binding.rowSecurityBulletin.setOnClickListener { openUrl(SECURITY_BULLETIN_URL) }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
@@ -81,6 +89,9 @@ class DeviceDetailActivity : AppCompatActivity() {
             R.id.menu_device_detail_check -> repository.checkDevice(current.id)
             R.id.menu_device_detail_edit -> openDeviceEditor(current.id)
             R.id.menu_device_detail_seen -> deviceScope.launch { repository.acknowledge(current) }
+            R.id.menu_device_detail_alerts -> pickAlertLevel(current.alerts) { level ->
+                deviceScope.launch { repository.setAlertLevel(current.id, level) }
+            }
             R.id.menu_device_detail_delete -> confirmDeleteDevice(current)
             else -> return super.onOptionsItemSelected(item)
         }
@@ -104,6 +115,9 @@ class DeviceDetailActivity : AppCompatActivity() {
         binding.badge.isInvisible = busy
         binding.progress.isVisible = busy
         binding.rowCurrent.summary = device.firmware ?: getString(R.string.devices_not_checked_yet)
+        binding.rowInstalled.show(device.installedFirmware?.let {
+            if (device.updateReadyToInstall()) getString(R.string.device_detail_installed_behind, it) else it
+        })
         val isNew = device.status == DeviceStatus.NEW_UPDATE
         binding.rowUpdateType.isVisible = isNew
         if (isNew) {
@@ -175,5 +189,9 @@ class DeviceDetailActivity : AppCompatActivity() {
         getSystemService(ClipboardManager::class.java)
             .setPrimaryClip(ClipData.newPlainText(getString(R.string.device_detail_full_build), text))
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) semToast(getString(R.string.device_detail_copied))
+    }
+
+    private companion object {
+        const val SECURITY_BULLETIN_URL = "https://security.samsungmobile.com/securityUpdate.smsb"
     }
 }

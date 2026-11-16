@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.data.model.Device
+import dev.risenid.galaxyfirm.data.model.DigestItem
 import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.util.osVersionLabel
 
@@ -105,6 +106,35 @@ class Notifier(private val context: Context) {
         NotificationManagerCompat.from(appContext).notify(FAILURE_NOTIFICATION_ID, notification)
     }
 
+    @SuppressLint("MissingPermission")
+    fun notifyDigest(items: List<DigestItem>) {
+        if (!canNotify() || items.isEmpty()) return
+        ensureChannels()
+        val lines = items.map { item ->
+            val label = when {
+                item.kind == DigestItem.UPCOMING -> R.string.device_status_soon
+                item.updateType == UpdateType.MAJOR -> R.string.device_status_major
+                item.updateType == UpdateType.SECURITY -> R.string.device_status_security
+                else -> R.string.device_status_new
+            }
+            appContext.getString(R.string.device_digest_line, item.deviceName, appContext.getString(label), item.firmware)
+        }
+        val title = appContext.resources.getQuantityString(R.plurals.device_digest_title, items.size, items.size)
+        val style = NotificationCompat.InboxStyle().setBigContentTitle(title)
+        lines.forEach(style::addLine)
+        val notification = NotificationCompat.Builder(appContext, CHANNEL_UPDATES)
+            .setSmallIcon(R.drawable.ic_stat_update)
+            .setContentTitle(title)
+            .setContentText(lines.joinToString(", "))
+            .setStyle(style)
+            .setNumber(items.size)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(launchPendingIntent(DIGEST_NOTIFICATION_ID))
+            .build()
+        NotificationManagerCompat.from(appContext).notify(DIGEST_NOTIFICATION_ID, notification)
+    }
+
     fun isChannelBlocked(channelId: String = CHANNEL_UPDATES): Boolean {
         ensureChannels()
         val manager = appContext.getSystemService(NotificationManager::class.java) ?: return false
@@ -142,6 +172,7 @@ class Notifier(private val context: Context) {
         const val CHANNEL_UPDATES = "firmware_updates"
         const val CHANNEL_STATUS = "scan_status"
         private const val FAILURE_NOTIFICATION_ID = -1001
+        private const val DIGEST_NOTIFICATION_ID = -1002
         private const val UPCOMING_ID_OFFSET = 100_000
     }
 }

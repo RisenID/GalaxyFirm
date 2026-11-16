@@ -32,6 +32,12 @@ A native-looking One UI app built on Samsung's own SESL widget forks.
 - **One UI throughout.** The app uses a collapsing large title, rounded card lists, sub-tab filters, the One UI switch bar, the bottom tab bar, and light and dark themes.
 - **Private.** There is no account, no analytics and no ads. Data never leaves the phone, except for the model and region codes sent to Samsung's firmware servers.
 - **Backups.** You can export your device list to a JSON file and import it again later.
+- **This phone.** On a Samsung phone the app offers to track the phone itself, reading its model, region and installed build automatically.
+- **Installed build.** Enter the build a device is running and it shows **Ready to install** when a newer one is available.
+- **Release notes and security bulletin** links for every device.
+- **Other regions.** See which regions have a newer, the same or an older public build for the same model, and start tracking any of them.
+- **Alert control.** Per-device alerts (all, major and security, major only, or off), and an optional daily digest instead of instant notifications.
+- **Home-screen widget** with every device, its status and a refresh button.
 
 The app only tells you that new firmware exists. To install an update, use **Settings → Software update** on the device as usual.
 

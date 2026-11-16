@@ -86,6 +86,46 @@
                 android:orientation="vertical">
 
                 <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_alert_style"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:icon="@drawable/ic_oui_notification_with_keyword"
+                    app:showTopDivider="false"
+                    app:title="@string/settings_alert_style_title"
+                    app:userUpdatableSummary="true" />
+
+                <dev.oneuiproject.oneui.widget.CardItemView
+                    android:id="@+id/row_digest_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_oui_alarm_outline"
+                    app:title="@string/settings_digest_time_title"
+                    app:userUpdatableSummary="true" />
+
+            </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="?android:attr/listPreferredItemPaddingStart"
+                android:text="@string/settings_alert_style_description"
+                android:textAlignment="viewStart"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="13sp" />
+
+            <dev.oneuiproject.oneui.widget.Separator
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?android:colorBackground"
+                android:orientation="vertical">
+
+                <dev.oneuiproject.oneui.widget.CardItemView
                     android:id="@+id/row_system_notification_settings"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

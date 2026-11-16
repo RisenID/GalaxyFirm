@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import dev.risenid.galaxyfirm.data.model.Device
+import dev.risenid.galaxyfirm.data.model.DigestItem
 import dev.risenid.galaxyfirm.data.model.ScanResult
 import dev.risenid.galaxyfirm.data.model.ScanSession
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,21 @@ interface DeviceDao {
 
     @Query("SELECT COUNT(*) FROM devices")
     suspend fun count(): Int
+
+    @Query("UPDATE devices SET alertLevel = :level WHERE id = :id")
+    suspend fun setAlertLevel(id: Long, level: String)
+}
+
+@Dao
+interface DigestDao {
+    @Insert
+    suspend fun insert(items: List<DigestItem>)
+
+    @Query("SELECT * FROM digest_items ORDER BY createdAt ASC, id ASC")
+    suspend fun getAll(): List<DigestItem>
+
+    @Query("DELETE FROM digest_items")
+    suspend fun clear()
 }
 
 @Dao

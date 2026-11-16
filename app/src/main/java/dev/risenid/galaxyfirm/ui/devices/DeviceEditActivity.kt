@@ -15,13 +15,20 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
+import dev.risenid.galaxyfirm.data.model.AlertLevel
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.model.DeviceType
+import dev.risenid.galaxyfirm.data.model.alerts
+import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.databinding.ActivityDeviceEditBinding
+import dev.risenid.galaxyfirm.util.ThisDevice
+import dev.risenid.galaxyfirm.util.userDeviceName
 import dev.oneuiproject.oneui.dialog.ProgressDialog
 import dev.oneuiproject.oneui.ktx.semToast
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DeviceEditActivity : AppCompatActivity() {
 
@@ -30,6 +37,8 @@ class DeviceEditActivity : AppCompatActivity() {
     private var editing: Device? = null
     private var type = DeviceType.PHONE
     private var typePicked = false
+    private var thisDevice = false
+    private var alertLevel = AlertLevel.ALL
     private var saving = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,9 +50,14 @@ class DeviceEditActivity : AppCompatActivity() {
         savedInstanceState?.let {
             type = DeviceType.entries[it.getInt(KEY_TYPE)]
             typePicked = it.getBoolean(KEY_TYPE_PICKED)
+            thisDevice = it.getBoolean(KEY_THIS_DEVICE)
+            alertLevel = AlertLevel.entries[it.getInt(KEY_ALERTS)]
         }
         setupInputs()
+        if (id <= 0L) lifecycleScope.launch { withContext(Dispatchers.IO) { ThisDevice.current }?.let(::setupThisPhone) }
         updateType()
+        updateThisDevice()
+        updateAlerts()
         binding.bottomActions.setOnItemSelectedListener {
             onAction(it.itemId)
             false
@@ -62,29 +76,77 @@ class DeviceEditActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_TYPE, type.ordinal)
         outState.putBoolean(KEY_TYPE_PICKED, typePicked)
+        outState.putBoolean(KEY_THIS_DEVICE, thisDevice)
+        outState.putInt(KEY_ALERTS, alertLevel.ordinal)
     }
 
     private fun setupInputs() {
         binding.modelInput.filters = arrayOf(InputFilter.AllCaps(), allowed("-"), InputFilter.LengthFilter(20))
         binding.cscInput.filters = arrayOf(InputFilter.AllCaps(), allowed(""), InputFilter.LengthFilter(3))
+        binding.installedInput.filters = arrayOf(InputFilter.AllCaps(), allowed(""), InputFilter.LengthFilter(20))
         binding.modelInput.doAfterTextChanged { text ->
             showError(binding.modelError, null)
             if (!typePicked) {
                 type = DeviceType.guess(text.toString())
                 updateType()
             }
+            checkThisDevice()
         }
         binding.cscInput.doAfterTextChanged { text ->
             showError(binding.cscError, null)
             val region = cscRegion(text.toString())
             binding.cscRegion.text = region
             binding.cscRegion.isVisible = region != null
+            checkThisDevice()
         }
-        binding.cscInput.setOnEditorActionListener { _, actionId, _ ->
+        binding.installedInput.doAfterTextChanged { binding.installedError.isVisible = false }
+        binding.installedInput.setOnEditorActionListener { _, actionId, _ ->
             (actionId == EditorInfo.IME_ACTION_DONE).also { if (it) save() }
         }
         binding.cscPick.setOnClickListener { pickCsc() }
         binding.typeItem.setOnClickListener { pickType() }
+        binding.alertsItem.setOnClickListener {
+            pickAlertLevel(alertLevel) {
+                alertLevel = it
+                updateAlerts()
+            }
+        }
+    }
+
+    private fun setupThisPhone(phone: ThisDevice) {
+        binding.thisPhoneCard.isVisible = true
+        binding.thisPhoneItem.summary = getString(R.string.device_detail_subtitle, phone.model, phone.csc)
+        binding.thisPhoneItem.setOnClickListener { fillThisPhone(phone) }
+    }
+
+    private fun fillThisPhone(phone: ThisDevice) {
+        if (binding.nameInput.text.isNullOrBlank()) {
+            binding.nameInput.setText(userDeviceName() ?: getString(R.string.devices_this_phone_name))
+        }
+        binding.modelInput.setText(phone.model)
+        binding.cscInput.setText(phone.csc)
+        thisDevice = true
+        binding.installedInput.setText(phone.installedPda)
+        updateThisDevice()
+    }
+
+    private fun checkThisDevice() {
+        if (!thisDevice) return
+        val model = binding.modelInput.text.toString()
+        val csc = binding.cscInput.text.toString()
+        if (model.isEmpty() || csc.isEmpty() || ThisDevice.current?.matches(model, csc) == true) return
+        thisDevice = false
+        binding.installedInput.text = null
+        updateThisDevice()
+    }
+
+    private fun updateThisDevice() {
+        binding.installedInput.isEnabled = !thisDevice
+        binding.installedNote.isVisible = thisDevice
+    }
+
+    private fun updateAlerts() {
+        binding.alertsItem.summary = getString(alertLevel.label)
     }
 
     private fun allowed(extra: String) = InputFilter { source, start, end, _, _, _ ->
@@ -98,7 +160,12 @@ class DeviceEditActivity : AppCompatActivity() {
         binding.nameInput.setText(device.name.takeIf { it != device.model })
         binding.modelInput.setText(device.model)
         binding.cscInput.setText(device.csc)
+        binding.installedInput.setText(device.installedFirmware)
+        thisDevice = device.isThisDevice
+        alertLevel = device.alerts
         updateType()
+        updateThisDevice()
+        updateAlerts()
     }
 
     private fun updateType() {
@@ -157,6 +224,7 @@ class DeviceEditActivity : AppCompatActivity() {
         val name = binding.nameInput.text.toString().trim()
         val model = binding.modelInput.text.toString().trim().uppercase()
         val csc = binding.cscInput.text.toString().trim().uppercase()
+        val installed = binding.installedInput.text.toString().trim().uppercase().takeIf { it.isNotEmpty() }
         val modelError = when {
             model.isEmpty() -> R.string.device_edit_error_model_empty
             !MODEL_PATTERN.matches(model) -> R.string.device_edit_error_model_format
@@ -167,11 +235,15 @@ class DeviceEditActivity : AppCompatActivity() {
             csc.length != 3 -> R.string.device_edit_error_csc_format
             else -> null
         }
+        val installedError = installed?.takeUnless { thisDevice || BuildVersion.isPlausiblePda(it, model) }?.let { installedError(model) }
         showError(binding.modelError, modelError)
         showError(binding.cscError, cscError)
+        binding.installedError.isVisible = installedError != null
+        binding.installedError.text = installedError
         when {
             modelError != null -> return focus(binding.modelInput)
             cscError != null -> return focus(binding.cscInput)
+            installedError != null -> return focus(binding.installedInput)
         }
         saving = true
         val progress = ProgressDialog(this).apply {
@@ -184,7 +256,7 @@ class DeviceEditActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val current = editing
-                if (current == null) add(name, model, csc) else update(current, name, model, csc)
+                if (current == null) add(name, model, csc, installed) else update(current, name, model, csc, installed)
             } finally {
                 progress.dismiss()
                 saving = false
@@ -192,13 +264,18 @@ class DeviceEditActivity : AppCompatActivity() {
         }
     }
 
+    private fun installedError(model: String): String =
+        BuildVersion.pdaPrefix(model)
+            ?.let { getString(R.string.device_edit_error_installed_format, it) }
+            ?: getString(R.string.device_edit_error_installed_generic)
+
     private fun focus(input: EditText) {
         input.requestFocus()
         input.setSelection(input.length())
     }
 
-    private suspend fun add(name: String, model: String, csc: String) {
-        val id = repository.addDevice(name, model, csc, type).getOrElse { error ->
+    private suspend fun add(name: String, model: String, csc: String, installed: String?) {
+        val id = repository.addDevice(name, model, csc, type, installed, thisDevice, alertLevel).getOrElse { error ->
             if (error is IllegalStateException) {
                 showError(binding.modelError, R.string.device_edit_error_duplicate)
                 focus(binding.modelInput)
@@ -211,13 +288,13 @@ class DeviceEditActivity : AppCompatActivity() {
         if (device?.status == DeviceStatus.FAILED) verifyFailed(device, removeOnFix = true) else finish()
     }
 
-    private suspend fun update(current: Device, name: String, model: String, csc: String) {
+    private suspend fun update(current: Device, name: String, model: String, csc: String, installed: String?) {
         val retarget = current.model != model || current.csc != csc
         val updated = if (retarget) {
             Device(id = current.id, name = name, model = model, csc = csc, type = type, createdAt = current.createdAt)
         } else {
-            current.copy(name = name, type = type)
-        }
+            current
+        }.copy(name = name, type = type, installedFirmware = installed, isThisDevice = thisDevice, alertLevel = alertLevel.name)
         try {
             repository.updateDevice(updated)
         } catch (_: SQLiteConstraintException) {
@@ -246,6 +323,8 @@ class DeviceEditActivity : AppCompatActivity() {
     private companion object {
         const val KEY_TYPE = "type"
         const val KEY_TYPE_PICKED = "type_picked"
+        const val KEY_THIS_DEVICE = "this_device"
+        const val KEY_ALERTS = "alerts"
         val MODEL_PATTERN = Regex("^[A-Z]{2,3}-[A-Z0-9]{3,}$")
     }
 }

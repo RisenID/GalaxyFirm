@@ -1,7 +1,9 @@
 package dev.risenid.galaxyfirm.ui.devices
 
 import android.content.Context
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -10,11 +12,14 @@ import androidx.core.content.ContextCompat
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.ServiceLocator
 import dev.risenid.galaxyfirm.data.Repository
+import dev.risenid.galaxyfirm.data.model.AlertLevel
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.model.DeviceType
 import dev.risenid.galaxyfirm.data.model.ScanSession
+import dev.risenid.galaxyfirm.data.model.installUpdateType
 import dev.risenid.galaxyfirm.data.net.UpdateType
+import dev.oneuiproject.oneui.ktx.semToast
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,13 +67,34 @@ internal val DeviceType.label: Int
         DeviceType.BUDS -> R.string.device_type_buds
     }
 
+@get:StringRes
+internal val AlertLevel.label: Int
+    get() = when (this) {
+        AlertLevel.ALL -> R.string.device_alerts_all
+        AlertLevel.MAJOR_SECURITY -> R.string.device_alerts_major_security
+        AlertLevel.MAJOR -> R.string.device_alerts_major
+        AlertLevel.NONE -> R.string.device_alerts_off
+    }
+
 internal val Device.showsComingSoon: Boolean
     get() = upcomingFirmware != null && status != DeviceStatus.NEW_UPDATE && status != DeviceStatus.FAILED
 
 internal fun TextView.bindBadge(device: Device) {
-    val (background, color, label) = if (device.showsComingSoon) {
-        Triple(R.drawable.bg_badge_soon, R.color.status_soon, R.string.device_status_soon)
-    } else when (device.status) {
+    val install = device.installUpdateType()
+    val (background, color, label) = when {
+        device.status == DeviceStatus.NEW_UPDATE || device.status == DeviceStatus.FAILED -> statusBadge(device)
+        install == UpdateType.MAJOR -> Triple(R.drawable.bg_badge_major, R.color.status_major, R.string.device_status_ready)
+        install != null -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_ready)
+        device.showsComingSoon -> Triple(R.drawable.bg_badge_soon, R.color.status_soon, R.string.device_status_soon)
+        else -> statusBadge(device)
+    }
+    setBackgroundResource(background)
+    setTextColor(ContextCompat.getColor(context, color))
+    setText(label)
+}
+
+private fun statusBadge(device: Device): Triple<Int, Int, Int> =
+    when (device.status) {
         DeviceStatus.NEW_UPDATE -> when (device.updateType) {
             UpdateType.MAJOR -> Triple(R.drawable.bg_badge_major, R.color.status_major, R.string.device_status_major)
             UpdateType.SECURITY -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_security)
@@ -78,9 +104,25 @@ internal fun TextView.bindBadge(device: Device) {
         DeviceStatus.UP_TO_DATE -> Triple(R.drawable.bg_badge_neutral, R.color.status_neutral, R.string.device_status_up_to_date)
         DeviceStatus.UNKNOWN -> Triple(R.drawable.bg_badge_neutral, R.color.status_neutral, R.string.device_status_unknown)
     }
-    setBackgroundResource(background)
-    setTextColor(ContextCompat.getColor(context, color))
-    setText(label)
+
+internal fun Context.pickAlertLevel(current: AlertLevel, onPicked: (AlertLevel) -> Unit) {
+    val labels = AlertLevel.entries.map { getString(it.label) }.toTypedArray()
+    AlertDialog.Builder(this)
+        .setTitle(R.string.device_alerts_title)
+        .setSingleChoiceItems(labels, current.ordinal) { dialog, which ->
+            onPicked(AlertLevel.entries[which])
+            dialog.dismiss()
+        }
+        .setNegativeButton(R.string.devices_cancel, null)
+        .show()
+}
+
+internal fun Context.openUrl(url: String) {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (_: ActivityNotFoundException) {
+        semToast(getString(R.string.device_detail_no_browser))
+    }
 }
 
 internal fun Context.cscRegion(code: String): String? {

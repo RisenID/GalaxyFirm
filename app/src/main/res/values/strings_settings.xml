@@ -29,6 +29,11 @@
     <string name="settings_notify_failures_title">Scan failure alerts</string>
     <string name="settings_notify_failures_summary">Notify when a background scan fails</string>
     <string name="settings_system_notification_settings">System notification settings</string>
+    <string name="settings_alert_style_title">Alert style</string>
+    <string name="settings_alert_style_instant">Instant</string>
+    <string name="settings_alert_style_digest">Daily digest</string>
+    <string name="settings_digest_time_title">Digest time</string>
+    <string name="settings_alert_style_description">A daily digest groups new and upcoming firmware into one notification at the time you choose.</string>
 
     <string name="settings_permissions_title">Permissions</string>
     <string name="settings_permissions_all_set">All set</string>
@@ -98,6 +103,34 @@
         <item quantity="other">Imported %d devices</item>
     </plurals>
 
+    <string name="settings_egg_title">Flashing your Galaxy</string>
+    <string name="settings_egg_port">ID:0/004 COM4</string>
+    <string name="settings_egg_pass">PASS!</string>
+    <string name="settings_egg_footer">All threads completed. Your Galaxy is now very, very up to date.</string>
+    <string name="settings_egg_reboot">Reboot</string>
+    <plurals name="settings_egg_taps_left">
+        <item quantity="one">You are %d tap away from flashing.</item>
+        <item quantity="other">You are %d taps away from flashing.</item>
+    </plurals>
+    <string-array name="settings_egg_log" translatable="false">
+        <item>&lt;ID:0/004&gt; Added!!</item>
+        <item>&lt;OSM&gt; Enter CS for MD5..</item>
+        <item>&lt;OSM&gt; Check MD5.. Do not unplug the cable..</item>
+        <item>&lt;OSM&gt; Checking MD5 finished Sucessfully..</item>
+        <item>&lt;ID:0/004&gt; Odin engine v(ID:3.1401)..</item>
+        <item>&lt;ID:0/004&gt; File analysis..</item>
+        <item>&lt;ID:0/004&gt; SetupConnection..</item>
+        <item>&lt;ID:0/004&gt; Initialzation..</item>
+        <item>&lt;ID:0/004&gt; Get PIT for mapping..</item>
+        <item>&lt;ID:0/004&gt; Firmware update start..</item>
+        <item>&lt;ID:0/004&gt; SingleDownload.</item>
+        <item>&lt;ID:0/004&gt; sboot.bin</item>
+        <item>&lt;ID:0/004&gt; super.img</item>
+        <item>&lt;ID:0/004&gt; vbmeta.img</item>
+        <item>&lt;ID:0/004&gt; RQT_CLOSE !!</item>
+        <item>&lt;ID:0/004&gt; Removed!!</item>
+        <item>&lt;OSM&gt; All threads completed. (succeed 1 / failed 0)</item>
+    </string-array>
     <plurals name="settings_history_limit_sessions">
         <item quantity="one">%d session</item>
         <item quantity="other">%d sessions</item>
