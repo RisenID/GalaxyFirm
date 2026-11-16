@@ -21,7 +21,11 @@ import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.model.DeviceStatus
 import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.databinding.ActivityDeviceDetailBinding
+import dev.risenid.galaxyfirm.data.model.DeviceType
+import dev.risenid.galaxyfirm.util.formatDate
 import dev.risenid.galaxyfirm.util.formatStamp
+import dev.risenid.galaxyfirm.util.osVersionDetail
+import dev.risenid.galaxyfirm.util.osVersionLabel
 import dev.oneuiproject.oneui.ktx.semToast
 import dev.oneuiproject.oneui.widget.CardItemView
 import kotlinx.coroutines.flow.combine
@@ -103,35 +107,34 @@ class DeviceDetailActivity : AppCompatActivity() {
         val isNew = device.status == DeviceStatus.NEW_UPDATE
         binding.rowUpdateType.isVisible = isNew
         if (isNew) {
-            binding.rowUpdateType.summary = updateTypeSummary(device.updateType, device.previousAndroidVersion, device.androidVersion)
+            binding.rowUpdateType.summary = updateTypeSummary(device.type, device.updateType, device.previousAndroidVersion, device.androidVersion)
         }
         val upcoming = device.upcomingFirmware
         binding.upcomingGroup.isVisible = upcoming != null
         if (upcoming != null) {
             binding.rowUpcoming.summary = upcoming
-            binding.rowUpcomingType.summary = updateTypeSummary(device.upcomingType, device.androidVersion, device.upcomingAndroidVersion)
-            binding.rowUpcomingSpotted.summary = device.upcomingFoundAt?.let { formatStamp(this, it) }
-                ?: getString(R.string.device_detail_unknown)
+            binding.rowUpcomingType.summary = updateTypeSummary(device.type, device.upcomingType, device.androidVersion, device.upcomingAndroidVersion)
+            binding.rowUpcomingReleased.show(device.upcomingReleasedAt?.let(::formatDate))
+            binding.rowUpcomingSpotted.show(device.upcomingFoundAt?.let { formatStamp(this, it) })
         }
-        binding.rowFullBuild.summary = device.fullFirmware?.let(::formatBuild) ?: getString(R.string.device_detail_unknown)
-        binding.rowPrevious.summary = device.previousFirmware ?: getString(R.string.device_detail_none)
-        binding.rowAndroid.summary = device.androidVersion ?: getString(R.string.device_detail_unknown)
+        binding.rowReleased.show(device.releasedAt?.let(::formatDate))
+        binding.rowFullBuild.show(device.fullFirmware?.let(::formatBuild))
+        binding.rowPrevious.show(device.previousFirmware)
+        binding.rowAndroid.title = getString(if (device.type == DeviceType.WATCH) R.string.device_detail_wear_os else R.string.device_detail_android)
+        binding.rowAndroid.show(device.androidVersion?.let { osVersionDetail(device.type, it) })
         binding.rowRegion.summary = cscRegion(device.csc)
             ?.let { getString(R.string.device_detail_subtitle, device.csc, it) } ?: device.csc
         binding.rowLastChecked.summary = device.lastCheckedAt?.let { formatStamp(this, it) }
             ?: getString(R.string.device_detail_never)
-        binding.rowUpdateFound.summary = device.updateFoundAt?.let { formatStamp(this, it) }
-            ?: getString(R.string.device_detail_none)
-        val error = device.lastError?.takeIf { device.status == DeviceStatus.FAILED }
-        binding.rowError.isVisible = error != null
-        binding.rowError.summary = error
+        binding.rowUpdateFound.show(device.updateFoundAt?.let { formatStamp(this, it) })
+        binding.rowError.show(device.lastError?.takeIf { device.status == DeviceStatus.FAILED })
         invalidateOptionsMenu()
     }
 
-    private fun updateTypeSummary(type: UpdateType?, oldOs: String?, newOs: String?): String = when (type) {
+    private fun updateTypeSummary(deviceType: DeviceType, type: UpdateType?, oldOs: String?, newOs: String?): String = when (type) {
         UpdateType.MAJOR -> {
             if (!oldOs.isNullOrBlank() && !newOs.isNullOrBlank() && oldOs != newOs) {
-                getString(R.string.device_detail_update_type_major_android, oldOs, newOs)
+                getString(R.string.device_detail_update_type_major_android, osVersionLabel(deviceType, oldOs), osVersionLabel(deviceType, newOs))
             } else {
                 getString(R.string.device_status_major)
             }
@@ -152,6 +155,11 @@ class DeviceDetailActivity : AppCompatActivity() {
         } else {
             full
         }
+    }
+
+    private fun CardItemView.show(value: String?) {
+        isVisible = value != null
+        summary = value
     }
 
     private fun CardItemView.copyable(value: (Device) -> String?) {

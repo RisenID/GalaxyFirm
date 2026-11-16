@@ -13,7 +13,11 @@ import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.data.net.FirmwareClient
 import dev.risenid.galaxyfirm.data.net.FirmwareException
 import dev.risenid.galaxyfirm.data.net.FirmwareLookup
+import dev.risenid.galaxyfirm.data.net.FusBinary
 import dev.risenid.galaxyfirm.data.net.UpdateType
+import dev.risenid.galaxyfirm.data.net.androidVersion
+import dev.risenid.galaxyfirm.data.net.pda
+import dev.risenid.galaxyfirm.data.net.releasedAt
 import dev.risenid.galaxyfirm.notify.Notifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -215,6 +219,8 @@ class Repository(
                 .put("upcomingAndroidVersion", device.upcomingAndroidVersion ?: JSONObject.NULL)
                 .put("upcomingType", device.upcomingType?.name ?: JSONObject.NULL)
                 .put("upcomingFoundAt", device.upcomingFoundAt ?: JSONObject.NULL)
+                .put("releasedAt", device.releasedAt ?: JSONObject.NULL)
+                .put("upcomingReleasedAt", device.upcomingReleasedAt ?: JSONObject.NULL)
             array.put(item)
         }
         JSONObject()
@@ -273,7 +279,9 @@ class Repository(
                 upcomingFirmware = obj.optNullableString("upcomingFirmware"),
                 upcomingAndroidVersion = obj.optNullableString("upcomingAndroidVersion"),
                 upcomingType = obj.optNullableUpdateType("upcomingType"),
-                upcomingFoundAt = obj.optNullableLong("upcomingFoundAt")
+                upcomingFoundAt = obj.optNullableLong("upcomingFoundAt"),
+                releasedAt = obj.optNullableLong("releasedAt"),
+                upcomingReleasedAt = obj.optNullableLong("upcomingReleasedAt")
             )
             deviceDao.insert(parsed.copy(updateType = parsed.updateType ?: inferUpdateType(parsed)))
             imported++
@@ -313,7 +321,7 @@ class Repository(
             val lookup = client.lookup(device.model, device.csc)
             val pub = lookup.public ?: throw FirmwareException("No firmware published")
             val stored = device.firmware
-            when {
+            val outcome = when {
                 stored == null -> {
                     val up = lookup.upcoming
                     val updated = device.copy(
@@ -380,6 +388,7 @@ class Repository(
                     withUpcoming(updated, device, lookup, now, changed = false)
                 }
             }
+            outcome.copy(device = outcome.device.enrich(device, lookup.history))
         } catch (e: Exception) {
             val nextStatus = if (device.updateFoundAt != null) DeviceStatus.NEW_UPDATE else DeviceStatus.FAILED
             val updated = device.copy(
@@ -413,6 +422,20 @@ class Repository(
             updated.copy(upcomingFirmware = null, upcomingAndroidVersion = null, upcomingType = null, upcomingFoundAt = null)
         }
         return ScanOutcome(device, status, changed, upcomingChanged = false)
+    }
+
+    private fun Device.enrich(previous: Device, history: List<FusBinary>): Device {
+        val index = history.indexOfFirst { it.pda == firmware }
+        val match = history.getOrNull(index)
+        val previousPda = previousFirmware ?: history.getOrNull(index - 1)?.pda
+        val upcoming = history.firstOrNull { it.pda == upcomingFirmware }
+        return copy(
+            androidVersion = androidVersion ?: match?.androidVersion,
+            previousFirmware = previousPda,
+            previousAndroidVersion = previousAndroidVersion ?: history.firstOrNull { it.pda == previousPda }?.androidVersion,
+            releasedAt = match?.releasedAt ?: releasedAt.takeIf { firmware == previous.firmware },
+            upcomingReleasedAt = upcoming?.releasedAt ?: upcomingReleasedAt.takeIf { upcomingFirmware == previous.upcomingFirmware }
+        )
     }
 
     private data class ScanOutcome(

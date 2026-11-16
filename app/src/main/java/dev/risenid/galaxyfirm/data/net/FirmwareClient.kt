@@ -5,6 +5,9 @@ import java.io.IOException
 import java.io.StringReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,7 +25,50 @@ data class FirmwareInfo(
 
 class FirmwareException(message: String) : Exception(message)
 
-data class FirmwareLookup(val public: FirmwareInfo?, val upcoming: FirmwareInfo?, val fusAvailable: Boolean)
+data class FirmwareLookup(
+    val public: FirmwareInfo?,
+    val upcoming: FirmwareInfo?,
+    val fusAvailable: Boolean,
+    val history: List<FusBinary>
+)
+
+val FusBinary.pda: String
+    get() = normalizeVersion(swVersion).substringBefore('/').trim()
+
+val FusBinary.androidVersion: String?
+    get() = parseAndroidVersion(osName)
+
+val FusBinary.releasedAt: Long?
+    get() = openDate?.trim()?.let {
+        runCatching { LocalDateTime.parse(it, OPEN_DATE_FORMAT).toInstant(ZoneOffset.UTC).toEpochMilli() }.getOrNull()
+    }
+
+private val OPEN_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
+private val ANDROID_VERSION_REGEX = Regex("""Android\s+(\d+(?:\.\d+)*)""", RegexOption.IGNORE_CASE)
+private val NUMERIC_VERSION_REGEX = Regex("""^\d+(?:\.\d+)*$""")
+
+private fun normalizeVersion(raw: String): String {
+    val vc = raw.trim().split("/").map { it.trim() }.toMutableList()
+    if (vc.size == 3) {
+        vc.add(vc[0])
+    }
+    if (vc.size >= 3 && vc[2].isEmpty()) {
+        vc[2] = vc[0]
+    }
+    return vc.joinToString("/")
+}
+
+private fun parseAndroidVersion(osName: String?): String? {
+    if (osName.isNullOrBlank()) return null
+    val trimmed = osName.trim()
+    ANDROID_VERSION_REGEX.find(trimmed)?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() }?.let {
+        return it
+    }
+    if (NUMERIC_VERSION_REGEX.matches(trimmed)) {
+        return trimmed
+    }
+    return null
+}
 
 class FirmwareClient(private val fusClient: FusClient = FusClient()) {
     suspend fun lookup(model: String, csc: String): FirmwareLookup = withContext(Dispatchers.IO) {
@@ -31,12 +77,21 @@ class FirmwareClient(private val fusClient: FusClient = FusClient()) {
         if (cleanModel.isEmpty() || cleanCsc.isEmpty()) {
             throw FirmwareException("Model or region not found")
         }
-        val (fusInfo, fota) = coroutineScope {
+        val (history, fota) = coroutineScope {
             val fota = async { runCatching { fetchFota(cleanModel, cleanCsc) } }
-            fetchFus(cleanModel, cleanCsc) to fota.await()
+            fetchHistory(cleanModel, cleanCsc) to fota.await()
+        }
+        val fusInfo = history.lastOrNull()?.let { latest ->
+            FirmwareInfo(
+                firmware = latest.pda,
+                fullFirmware = normalizeVersion(latest.swVersion),
+                androidVersion = latest.androidVersion,
+                openDate = latest.openDate?.trim()?.takeIf { it.isNotEmpty() },
+                source = "fus"
+            )
         }
         val publicInfo = fota.getOrElse { error ->
-            return@withContext FirmwareLookup(public = fusInfo ?: throw error, upcoming = null, fusAvailable = true)
+            return@withContext FirmwareLookup(public = fusInfo ?: throw error, upcoming = null, fusAvailable = true, history = history)
         }
         val merged = if (fusInfo != null && fusInfo.firmware == publicInfo.firmware) {
             publicInfo.copy(
@@ -49,30 +104,17 @@ class FirmwareClient(private val fusClient: FusClient = FusClient()) {
         FirmwareLookup(
             public = merged,
             upcoming = fusInfo?.takeIf { BuildVersion.isNewer(it.firmware, publicInfo.firmware) },
-            fusAvailable = fusInfo != null
+            fusAvailable = fusInfo != null,
+            history = history
         )
     }
 
-    private suspend fun fetchFus(model: String, csc: String): FirmwareInfo? = try {
-        fusClient.history(model, csc).lastOrNull()?.let { latest ->
-            val full = normalizeVersion(latest.swVersion)
-            val pda = full.substringBefore('/').trim()
-            if (pda.isEmpty()) {
-                null
-            } else {
-                FirmwareInfo(
-                    firmware = pda,
-                    fullFirmware = full,
-                    androidVersion = parseAndroidVersion(latest.osName),
-                    openDate = latest.openDate?.trim()?.takeIf { it.isNotEmpty() },
-                    source = "fus"
-                )
-            }
-        }
+    private suspend fun fetchHistory(model: String, csc: String): List<FusBinary> = try {
+        fusClient.history(model, csc).filter { it.pda.isNotEmpty() }.distinctBy { it.pda }
     } catch (e: CancellationException) {
         throw e
     } catch (_: Throwable) {
-        null
+        emptyList()
     }
 
     private fun fetchFota(model: String, csc: String): FirmwareInfo {
@@ -170,33 +212,8 @@ class FirmwareClient(private val fusClient: FusClient = FusClient()) {
         }
     }
 
-    private fun normalizeVersion(raw: String): String {
-        val vc = raw.trim().split("/").map { it.trim() }.toMutableList()
-        if (vc.size == 3) {
-            vc.add(vc[0])
-        }
-        if (vc.size >= 3 && vc[2].isEmpty()) {
-            vc[2] = vc[0]
-        }
-        return vc.joinToString("/")
-    }
-
-    private fun parseAndroidVersion(osName: String?): String? {
-        if (osName.isNullOrBlank()) return null
-        val trimmed = osName.trim()
-        ANDROID_VERSION_REGEX.find(trimmed)?.groupValues?.getOrNull(1)?.takeIf { it.isNotEmpty() }?.let {
-            return it
-        }
-        if (NUMERIC_VERSION_REGEX.matches(trimmed)) {
-            return trimmed
-        }
-        return null
-    }
-
     private companion object {
         const val FOTA_USER_AGENT = "Kiss2.0_FUS"
         const val TIMEOUT_MS = 15_000
-        val ANDROID_VERSION_REGEX = Regex("""Android\s+(\d+(?:\.\d+)*)""", RegexOption.IGNORE_CASE)
-        val NUMERIC_VERSION_REGEX = Regex("""^\d+(?:\.\d+)*$""")
     }
 }

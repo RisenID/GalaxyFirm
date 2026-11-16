@@ -2,6 +2,7 @@ package dev.risenid.galaxyfirm.util
 
 import android.content.Context
 import android.text.format.DateFormat
+import dev.risenid.galaxyfirm.data.model.DeviceType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -11,6 +12,25 @@ fun formatStamp(context: Context, millis: Long): String {
     val datePart = SimpleDateFormat("dd MMM", locale).format(Date(millis))
     return "$datePart ${formatTime(context, millis)}"
 }
+
+fun wearOsVersion(android: String): String? = when (android.substringBefore('.').trim().toIntOrNull()) {
+    11 -> "3"
+    13 -> "4"
+    14 -> "5"
+    15 -> "5.1"
+    16 -> "6"
+    17 -> "7"
+    else -> null
+}
+
+fun osVersionLabel(type: DeviceType, android: String): String =
+    if (type == DeviceType.WATCH) wearOsVersion(android)?.let { "Wear OS $it" } ?: "Android $android" else "Android $android"
+
+fun osVersionDetail(type: DeviceType, android: String): String =
+    if (type == DeviceType.WATCH) wearOsVersion(android)?.let { "Wear OS $it (Android $android)" } ?: "Android $android" else "Android $android"
+
+fun formatDate(millis: Long): String =
+    SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(millis))
 
 fun formatTime(context: Context, millis: Long): String {
     val locale = Locale.getDefault()

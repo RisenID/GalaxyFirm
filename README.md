@@ -51,6 +51,8 @@ Every check asks both of Samsung's sources at the same time:
    - The `BINARY_INFO` entries are sorted by sequence, beta builds are dropped, and the newest entry is used. This also gives the Android version and release date.
    - New builds usually appear here days before they roll out over the air. When the FUS build is newer than the public one, it is shown as **Coming soon**.
    - If a region has no public list, the FUS build is used as the available firmware.
+   - The same history fills in each device's details: the Android version, the previous build and the release date of the available build. Rows that would be empty are hidden.
+   - Watches show their **Wear OS** version (for example *Wear OS 6 (Android 16)*, and *Wear OS 6 → Wear OS 7* for a major update). Buds have no OS version.
 3. **Normalising the build string.** Build strings are normalised to `PDA/CSC/MODEM/PDA`, as Bifrost does. The PDA part (for example `S931BXXUDDZJB`) is the build that is tracked.
 
 ### Deciding "Up to date", "Coming soon" and "New update"

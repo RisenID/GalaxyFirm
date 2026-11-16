@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import dev.risenid.galaxyfirm.R
 import dev.risenid.galaxyfirm.data.model.Device
 import dev.risenid.galaxyfirm.data.net.UpdateType
+import dev.risenid.galaxyfirm.util.osVersionLabel
 
 class Notifier(private val context: Context) {
     private val appContext = context.applicationContext
@@ -44,7 +45,7 @@ class Notifier(private val context: Context) {
             else -> "New update available"
         }
         val androidSuffix = if (device.updateType == UpdateType.MAJOR && !device.androidVersion.isNullOrBlank()) {
-            " · Android ${device.androidVersion}"
+            " · ${osVersionLabel(device.type, device.androidVersion)}"
         } else {
             ""
         }

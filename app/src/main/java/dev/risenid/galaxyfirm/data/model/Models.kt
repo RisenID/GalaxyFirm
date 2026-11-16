@@ -64,7 +64,9 @@ data class Device(
     val upcomingFirmware: String? = null,
     val upcomingAndroidVersion: String? = null,
     val upcomingType: UpdateType? = null,
-    val upcomingFoundAt: Long? = null
+    val upcomingFoundAt: Long? = null,
+    val releasedAt: Long? = null,
+    val upcomingReleasedAt: Long? = null
 )
 
 @Entity(tableName = "scan_sessions")
