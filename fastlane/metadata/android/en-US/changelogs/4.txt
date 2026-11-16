@@ -1,0 +1,1 @@
+Device details now show the Android version, previous build and release date from Samsung's firmware history. Watches show their Wear OS version.
