@@ -241,7 +241,7 @@ class Repository(
                 ?: DeviceStatus.UNKNOWN
             val updateType = obj.optNullableString("updateType")
                 ?.let { runCatching { UpdateType.valueOf(it) }.getOrNull() }
-            val device = Device(
+            val parsed = Device(
                 name = name,
                 model = model,
                 csc = csc,
@@ -256,7 +256,7 @@ class Repository(
                 lastCheckedAt = obj.optNullableLong("lastCheckedAt"),
                 updateFoundAt = obj.optNullableLong("updateFoundAt")
             )
-            deviceDao.insert(device)
+            deviceDao.insert(parsed.copy(updateType = parsed.updateType ?: inferUpdateType(parsed)))
             imported++
         }
         imported
@@ -280,6 +280,12 @@ class Repository(
         new = sessions.count { it.newCount > 0 },
         failed = sessions.count { it.failedCount > 0 }
     )
+
+    private fun inferUpdateType(device: Device): UpdateType? {
+        val firmware = device.firmware ?: return null
+        if (device.status != DeviceStatus.NEW_UPDATE) return null
+        return BuildVersion.classify(firmware, device.previousFirmware, device.androidVersion, device.previousAndroidVersion)
+    }
 
     private suspend fun evaluateDevice(device: Device): ScanOutcome {
         val now = System.currentTimeMillis()
@@ -331,7 +337,7 @@ class Repository(
                         fullFirmware = if (same) info.fullFirmware else device.fullFirmware,
                         androidVersion = if (same) info.androidVersion ?: device.androidVersion else device.androidVersion,
                         status = nextStatus,
-                        updateType = if (nextStatus == DeviceStatus.NEW_UPDATE) device.updateType else null,
+                        updateType = if (nextStatus == DeviceStatus.NEW_UPDATE) device.updateType ?: inferUpdateType(device) else null,
                         lastCheckedAt = now,
                         lastError = null
                     )
