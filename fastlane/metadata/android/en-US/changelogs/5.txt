@@ -1,0 +1,1 @@
+New: home-screen widget, this-phone tracking, installed builds with "Ready to install", release-note links, other-region lookup, per-device alerts and a daily digest.
