@@ -29,6 +29,7 @@ internal enum class StatusKind(
 ) {
     MAJOR(iconsR.drawable.ic_oui_download_circle_outline, R.color.status_major, R.color.status_major_container, R.drawable.bg_badge_major),
     NEW(iconsR.drawable.ic_oui_download_circle_outline, R.color.status_new, R.color.status_new_container, R.drawable.bg_badge_new),
+    SOON(iconsR.drawable.ic_oui_time_outline, R.color.status_soon, R.color.status_soon_container, R.drawable.bg_badge_soon),
     FAILED(iconsR.drawable.ic_oui_error, R.color.status_failed, R.color.status_failed_container, R.drawable.bg_badge_failed),
     OK(iconsR.drawable.ic_oui_checkbox_checked_outline, R.color.status_neutral, R.color.status_neutral_container, R.drawable.bg_badge_neutral);
 
@@ -37,13 +38,14 @@ internal enum class StatusKind(
             session.newCount > 0 && session.majorCount > 0 -> MAJOR
             session.newCount > 0 -> NEW
             session.failedCount > 0 -> FAILED
+            session.upcomingCount > 0 -> SOON
             else -> OK
         }
 
         fun of(result: ScanResult) = when (result.status) {
             DeviceStatus.NEW_UPDATE -> if (result.updateType == UpdateType.MAJOR) MAJOR else NEW
             DeviceStatus.FAILED -> FAILED
-            else -> OK
+            else -> if (result.upcomingFirmware != null) SOON else OK
         }
     }
 }

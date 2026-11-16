@@ -35,6 +35,7 @@ class Notifier(private val context: Context) {
 
     @SuppressLint("MissingPermission")
     fun notifyUpdate(device: Device) {
+        NotificationManagerCompat.from(appContext).cancel(upcomingId(device))
         if (!canNotify()) return
         ensureChannels()
         val title = when (device.updateType) {
@@ -58,6 +59,29 @@ class Notifier(private val context: Context) {
             .setContentIntent(launchPendingIntent(device.id.toInt()))
             .build()
         NotificationManagerCompat.from(appContext).notify(device.id.toInt(), notification)
+    }
+
+    @SuppressLint("MissingPermission")
+    fun notifyUpcoming(device: Device) {
+        if (!canNotify()) return
+        ensureChannels()
+        val title = when (device.upcomingType) {
+            UpdateType.MAJOR -> "Major update coming soon"
+            UpdateType.SECURITY -> "Security update coming soon"
+            else -> "Update coming soon"
+        }
+        val body = "${device.name} · ${device.model} (${device.csc})\nVersion ${device.upcomingFirmware} is on Samsung's servers but not rolling out yet."
+        val id = upcomingId(device)
+        val notification = NotificationCompat.Builder(appContext, CHANNEL_UPDATES)
+            .setSmallIcon(R.drawable.ic_stat_update)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(launchPendingIntent(id))
+            .build()
+        NotificationManagerCompat.from(appContext).notify(id, notification)
     }
 
     @SuppressLint("MissingPermission")
@@ -100,6 +124,8 @@ class Notifier(private val context: Context) {
         return true
     }
 
+    private fun upcomingId(device: Device): Int = device.id.toInt() + UPCOMING_ID_OFFSET
+
     private fun launchPendingIntent(requestCode: Int): PendingIntent? {
         val intent = appContext.packageManager.getLaunchIntentForPackage(appContext.packageName)
             ?: return null
@@ -115,5 +141,6 @@ class Notifier(private val context: Context) {
         const val CHANNEL_UPDATES = "firmware_updates"
         const val CHANNEL_STATUS = "scan_status"
         private const val FAILURE_NOTIFICATION_ID = -1001
+        private const val UPCOMING_ID_OFFSET = 100_000
     }
 }

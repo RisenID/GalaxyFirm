@@ -7,6 +7,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 
@@ -20,42 +22,57 @@ data class FirmwareInfo(
 
 class FirmwareException(message: String) : Exception(message)
 
+data class FirmwareLookup(val public: FirmwareInfo?, val upcoming: FirmwareInfo?, val fusAvailable: Boolean)
+
 class FirmwareClient(private val fusClient: FusClient = FusClient()) {
-    suspend fun fetch(model: String, csc: String): FirmwareInfo = withContext(Dispatchers.IO) {
+    suspend fun lookup(model: String, csc: String): FirmwareLookup = withContext(Dispatchers.IO) {
         val cleanModel = model.trim().uppercase()
         val cleanCsc = csc.trim().uppercase()
         if (cleanModel.isEmpty() || cleanCsc.isEmpty()) {
             throw FirmwareException("Model or region not found")
         }
-        val fusInfo = try {
-            val history = fusClient.history(cleanModel, cleanCsc)
-            val latest = history.lastOrNull()
-            if (latest != null) {
-                val full = normalizeVersion(latest.swVersion)
-                val pda = full.substringBefore('/').trim()
-                if (pda.isNotEmpty()) {
-                    FirmwareInfo(
-                        firmware = pda,
-                        fullFirmware = full,
-                        androidVersion = parseAndroidVersion(latest.osName),
-                        openDate = latest.openDate?.trim()?.takeIf { it.isNotEmpty() },
-                        source = "fus"
-                    )
-                } else {
-                    null
-                }
-            } else {
+        val (fusInfo, fota) = coroutineScope {
+            val fota = async { runCatching { fetchFota(cleanModel, cleanCsc) } }
+            fetchFus(cleanModel, cleanCsc) to fota.await()
+        }
+        val publicInfo = fota.getOrElse { error ->
+            return@withContext FirmwareLookup(public = fusInfo ?: throw error, upcoming = null, fusAvailable = true)
+        }
+        val merged = if (fusInfo != null && fusInfo.firmware == publicInfo.firmware) {
+            publicInfo.copy(
+                androidVersion = publicInfo.androidVersion ?: fusInfo.androidVersion,
+                openDate = publicInfo.openDate ?: fusInfo.openDate
+            )
+        } else {
+            publicInfo
+        }
+        FirmwareLookup(
+            public = merged,
+            upcoming = fusInfo?.takeIf { BuildVersion.isNewer(it.firmware, publicInfo.firmware) },
+            fusAvailable = fusInfo != null
+        )
+    }
+
+    private suspend fun fetchFus(model: String, csc: String): FirmwareInfo? = try {
+        fusClient.history(model, csc).lastOrNull()?.let { latest ->
+            val full = normalizeVersion(latest.swVersion)
+            val pda = full.substringBefore('/').trim()
+            if (pda.isEmpty()) {
                 null
+            } else {
+                FirmwareInfo(
+                    firmware = pda,
+                    fullFirmware = full,
+                    androidVersion = parseAndroidVersion(latest.osName),
+                    openDate = latest.openDate?.trim()?.takeIf { it.isNotEmpty() },
+                    source = "fus"
+                )
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Throwable) {
-            null
         }
-        if (fusInfo != null) {
-            return@withContext fusInfo
-        }
-        fetchFota(cleanModel, cleanCsc)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Throwable) {
+        null
     }
 
     private fun fetchFota(model: String, csc: String): FirmwareInfo {

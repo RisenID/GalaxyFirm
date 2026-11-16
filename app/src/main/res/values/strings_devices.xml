@@ -20,6 +20,7 @@
 
     <string name="devices_filter_all">All (%1$d)</string>
     <string name="devices_filter_new">New (%1$d)</string>
+    <string name="devices_filter_soon">Coming soon (%1$d)</string>
     <string name="devices_filter_up_to_date">Up to date (%1$d)</string>
     <string name="devices_filter_failed">Failed (%1$d)</string>
 
@@ -31,12 +32,14 @@
     <string name="devices_not_checked_yet">Not checked yet</string>
     <string name="devices_checked_at">Checked %1$s</string>
     <string name="devices_found_at">Found %1$s</string>
+    <string name="devices_spotted_at">Spotted %1$s</string>
     <string name="devices_checking">Checking…</string>
 
     <string name="device_status_up_to_date">Up to date</string>
     <string name="device_status_new">New update</string>
     <string name="device_status_major">Major update</string>
     <string name="device_status_security">Security update</string>
+    <string name="device_status_soon">Coming soon</string>
     <string name="device_status_failed">Failed</string>
     <string name="device_status_unknown">Not checked</string>
 
@@ -82,7 +85,7 @@
 
     <string name="device_detail_firmware">Firmware</string>
     <string name="device_detail_device">Device</string>
-    <string name="device_detail_current">Current firmware</string>
+    <string name="device_detail_available">Available firmware</string>
     <string name="device_detail_update_type">Update type</string>
     <string name="device_detail_update_type_regular">Update</string>
     <string name="device_detail_update_type_major_android">Major update · Android %1$s → %2$s</string>
@@ -93,6 +96,9 @@
     <string name="device_detail_region">Region</string>
     <string name="device_detail_last_checked">Last checked</string>
     <string name="device_detail_update_found">Update found</string>
+    <string name="device_detail_coming_soon">Coming soon</string>
+    <string name="device_detail_upcoming">Upcoming firmware</string>
+    <string name="device_detail_spotted">Spotted</string>
     <string name="device_detail_last_error">Last error</string>
     <string name="device_detail_none">None</string>
     <string name="device_detail_never">Never</string>

@@ -60,7 +60,11 @@ data class Device(
     val lastCheckedAt: Long? = null,
     val updateFoundAt: Long? = null,
     val lastError: String? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val upcomingFirmware: String? = null,
+    val upcomingAndroidVersion: String? = null,
+    val upcomingType: UpdateType? = null,
+    val upcomingFoundAt: Long? = null
 )
 
 @Entity(tableName = "scan_sessions")
@@ -74,7 +78,8 @@ data class ScanSession(
     val upToDateCount: Int,
     val failedCount: Int,
     val firstModel: String?,
-    val firstCsc: String?
+    val firstCsc: String?,
+    val upcomingCount: Int = 0
 )
 
 @Entity(
@@ -99,12 +104,15 @@ data class ScanResult(
     val updateType: UpdateType? = null,
     val firmware: String?,
     val previousFirmware: String?,
-    val error: String?
+    val error: String?,
+    val upcomingFirmware: String? = null,
+    val upcomingType: UpdateType? = null
 )
 
 data class DeviceCounts(
     val all: Int,
     val new: Int,
+    val upcoming: Int,
     val upToDate: Int,
     val failed: Int
 )

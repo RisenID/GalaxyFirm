@@ -96,7 +96,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:showTopDivider="false"
-                    app:title="@string/device_detail_current" />
+                    app:title="@string/device_detail_available" />
 
                 <dev.oneuiproject.oneui.widget.CardItemView
                     android:id="@+id/row_update_type"
@@ -129,6 +129,49 @@
                     android:layout_height="wrap_content"
                     app:title="@string/device_detail_android" />
             </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+
+            <LinearLayout
+                android:id="@+id/upcoming_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <dev.oneuiproject.oneui.widget.Separator
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/device_detail_coming_soon" />
+
+                <dev.oneuiproject.oneui.widget.RoundedLinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?android:colorBackground"
+                    android:orientation="vertical">
+
+                    <dev.oneuiproject.oneui.widget.CardItemView
+                        android:id="@+id/row_upcoming"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:showTopDivider="false"
+                        app:title="@string/device_detail_upcoming" />
+
+                    <dev.oneuiproject.oneui.widget.CardItemView
+                        android:id="@+id/row_upcoming_type"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="@string/device_detail_update_type" />
+
+                    <dev.oneuiproject.oneui.widget.CardItemView
+                        android:id="@+id/row_upcoming_spotted"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:title="@string/device_detail_spotted" />
+                </dev.oneuiproject.oneui.widget.RoundedLinearLayout>
+            </LinearLayout>
 
             <dev.oneuiproject.oneui.widget.Separator
                 android:layout_width="match_parent"

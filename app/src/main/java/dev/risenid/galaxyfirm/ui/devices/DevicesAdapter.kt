@@ -79,13 +79,15 @@ class DevicesAdapter(
             }
             binding.model.text = device.model
             binding.csc.text = device.csc
-            binding.badge.bindBadge(device.status, device.updateType)
+            binding.badge.bindBadge(device)
             binding.badge.isInvisible = row.checking
             binding.progress.isVisible = row.checking
             val found = device.updateFoundAt?.takeIf { device.status == DeviceStatus.NEW_UPDATE }
+            val spotted = device.upcomingFoundAt?.takeIf { device.showsComingSoon }
             binding.stamp.text = when {
                 row.checking -> context.getString(R.string.devices_checking)
                 found != null -> context.getString(R.string.devices_found_at, formatStamp(context, found))
+                spotted != null -> context.getString(R.string.devices_spotted_at, formatStamp(context, spotted))
                 device.lastCheckedAt != null -> context.getString(R.string.devices_checked_at, formatStamp(context, device.lastCheckedAt))
                 else -> null
             }

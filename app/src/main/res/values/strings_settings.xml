@@ -24,6 +24,8 @@
     <string name="settings_notifications_allow">Allow</string>
     <string name="settings_notify_updates_title">New firmware alerts</string>
     <string name="settings_notify_updates_summary">Notify when a new firmware version is detected</string>
+    <string name="settings_notify_upcoming_title">Coming soon alerts</string>
+    <string name="settings_notify_upcoming_summary">Notify when a build appears on Samsung\'s servers before it rolls out</string>
     <string name="settings_notify_failures_title">Scan failure alerts</string>
     <string name="settings_notify_failures_summary">Notify when a background scan fails</string>
     <string name="settings_system_notification_settings">System notification settings</string>
@@ -39,8 +41,8 @@
     <string name="settings_perm_restricted">Restricted</string>
     <string name="settings_permissions_description">GalaxyFirm needs these to check for firmware in the background and alert you the moment a new build is out.</string>
     <string name="settings_battery_dialog_title">Allow background activity</string>
-    <string name="settings_battery_dialog_message">GalaxyFirm needs unrestricted battery usage to check for firmware on time. In App info, open Battery and choose Unrestricted.</string>
-    <string name="settings_battery_dialog_allow">Open App info</string>
+    <string name="settings_battery_dialog_message">GalaxyFirm needs unrestricted battery usage to check for firmware on time. Choose Unrestricted on the next screen.</string>
+    <string name="settings_battery_dialog_allow">Open battery settings</string>
     <string name="settings_battery_dialog_not_now">Not now</string>
 
     <string name="settings_appearance_title">Appearance</string>

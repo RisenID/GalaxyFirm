@@ -1,7 +1,6 @@
 package dev.risenid.galaxyfirm.util
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
@@ -73,19 +72,6 @@ object Permissions {
             putExtra(Settings.EXTRA_CHANNEL_ID, channelId)
         }
 
-    @SuppressLint("BatteryLife")
-    fun batteryExemptionIntent(context: Context): Intent {
-        val request = Intent(
-            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-            Uri.fromParts("package", context.packageName, null)
-        )
-        return if (request.resolveActivity(context.packageManager) != null) {
-            request
-        } else {
-            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-        }
-    }
-
     fun exactAlarmIntent(context: Context): Intent =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Intent(
@@ -114,17 +100,13 @@ object Permissions {
         }
     }
 
-    @SuppressLint("BatteryLife")
     fun launchBatteryExemption(context: Context) {
-        val direct = Intent(
-            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+        val batteryPage = Intent(
+            "android.settings.VIEW_ADVANCED_POWER_USAGE_DETAIL",
             Uri.fromParts("package", context.packageName, null)
         )
-        runCatching { context.startActivity(direct) }.onFailure {
-            val fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-            runCatching { context.startActivity(fallback) }.onFailure {
-                runCatching { context.startActivity(appDetailsIntent(context)) }
-            }
+        runCatching { context.startActivity(batteryPage) }.onFailure {
+            runCatching { context.startActivity(appDetailsIntent(context)) }
         }
     }
 

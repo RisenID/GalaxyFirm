@@ -89,6 +89,7 @@ class HistoryAdapter(
                     when (kind) {
                         StatusKind.MAJOR -> R.string.history_badge_major
                         StatusKind.NEW -> R.string.history_badge_new
+                        StatusKind.SOON -> R.string.history_badge_soon
                         StatusKind.FAILED -> R.string.history_badge_failed
                         StatusKind.OK -> R.string.history_badge_completed
                     }
@@ -121,6 +122,7 @@ private fun sessionSummary(context: Context, session: ScanSession): CharSequence
             color?.let { setSpan(ForegroundColorSpan(ContextCompat.getColor(context, it)), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
         }
         if (session.newCount > 0) part(res.getQuantityString(R.plurals.history_new_updates, session.newCount, session.newCount), R.color.status_new)
+        if (session.upcomingCount > 0) part(res.getQuantityString(R.plurals.history_coming_soon, session.upcomingCount, session.upcomingCount), R.color.status_soon)
         if (session.failedCount > 0) part(res.getQuantityString(R.plurals.history_failed, session.failedCount, session.failedCount), R.color.status_failed)
         if (session.upToDateCount > 0 || isEmpty()) part(res.getQuantityString(R.plurals.history_up_to_date, session.upToDateCount, session.upToDateCount))
     }

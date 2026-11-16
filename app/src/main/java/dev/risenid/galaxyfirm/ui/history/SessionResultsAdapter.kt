@@ -86,6 +86,8 @@ class SessionResultsAdapter : ListAdapter<SessionItem, RecyclerView.ViewHolder>(
                     context.getString(R.string.session_firmware_change, result.previousFirmware, result.firmware)
                 else -> result.firmware
             }
+            upcoming.text = result.upcomingFirmware?.let { context.getString(R.string.session_coming_soon, it) }
+            upcoming.isVisible = result.upcomingFirmware != null
             error.text = result.error
             error.isVisible = result.status == DeviceStatus.FAILED && !result.error.isNullOrBlank()
             badge.bindBadge(
@@ -98,6 +100,7 @@ class SessionResultsAdapter : ListAdapter<SessionItem, RecyclerView.ViewHolder>(
                         } else {
                             R.string.session_status_new
                         }
+                        StatusKind.SOON -> R.string.session_status_soon
                         StatusKind.FAILED -> R.string.session_status_failed
                         StatusKind.OK -> R.string.session_status_up_to_date
                     }

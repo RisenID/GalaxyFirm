@@ -36,12 +36,14 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
     private enum class Filter(val label: Int) {
         ALL(R.string.devices_filter_all),
         NEW(R.string.devices_filter_new),
+        SOON(R.string.devices_filter_soon),
         UP_TO_DATE(R.string.devices_filter_up_to_date),
         FAILED(R.string.devices_filter_failed);
 
         fun matches(device: Device) = when (this) {
             ALL -> true
             NEW -> device.status == DeviceStatus.NEW_UPDATE
+            SOON -> device.upcomingFirmware != null
             UP_TO_DATE -> device.status == DeviceStatus.UP_TO_DATE
             FAILED -> device.status == DeviceStatus.FAILED
         }
@@ -49,6 +51,7 @@ class DevicesFragment : Fragment(R.layout.fragment_devices), TabScreen {
         fun count(counts: DeviceCounts) = when (this) {
             ALL -> counts.all
             NEW -> counts.new
+            SOON -> counts.upcoming
             UP_TO_DATE -> counts.upToDate
             FAILED -> counts.failed
         }

@@ -1,0 +1,1 @@
+New: "Coming soon" shows builds that are on Samsung's servers before they roll out, with an alert when they go live. Battery settings shortcut fixed.

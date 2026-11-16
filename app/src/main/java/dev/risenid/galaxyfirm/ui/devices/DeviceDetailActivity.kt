@@ -47,6 +47,7 @@ class DeviceDetailActivity : AppCompatActivity() {
         if (id <= 0L) return finish()
         binding.rowCurrent.copyable { it.firmware }
         binding.rowFullBuild.copyable { it.fullFirmware }
+        binding.rowUpcoming.copyable { it.upcomingFirmware }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
@@ -95,14 +96,22 @@ class DeviceDetailActivity : AppCompatActivity() {
         } else {
             binding.headerFirmware.setTextColor(secondaryColor)
         }
-        binding.badge.bindBadge(device.status, device.updateType)
+        binding.badge.bindBadge(device)
         binding.badge.isInvisible = busy
         binding.progress.isVisible = busy
         binding.rowCurrent.summary = device.firmware ?: getString(R.string.devices_not_checked_yet)
         val isNew = device.status == DeviceStatus.NEW_UPDATE
         binding.rowUpdateType.isVisible = isNew
         if (isNew) {
-            binding.rowUpdateType.summary = updateTypeSummary(device)
+            binding.rowUpdateType.summary = updateTypeSummary(device.updateType, device.previousAndroidVersion, device.androidVersion)
+        }
+        val upcoming = device.upcomingFirmware
+        binding.upcomingGroup.isVisible = upcoming != null
+        if (upcoming != null) {
+            binding.rowUpcoming.summary = upcoming
+            binding.rowUpcomingType.summary = updateTypeSummary(device.upcomingType, device.androidVersion, device.upcomingAndroidVersion)
+            binding.rowUpcomingSpotted.summary = device.upcomingFoundAt?.let { formatStamp(this, it) }
+                ?: getString(R.string.device_detail_unknown)
         }
         binding.rowFullBuild.summary = device.fullFirmware?.let(::formatBuild) ?: getString(R.string.device_detail_unknown)
         binding.rowPrevious.summary = device.previousFirmware ?: getString(R.string.device_detail_none)
@@ -119,10 +128,8 @@ class DeviceDetailActivity : AppCompatActivity() {
         invalidateOptionsMenu()
     }
 
-    private fun updateTypeSummary(device: Device): String = when (device.updateType) {
+    private fun updateTypeSummary(type: UpdateType?, oldOs: String?, newOs: String?): String = when (type) {
         UpdateType.MAJOR -> {
-            val oldOs = device.previousAndroidVersion
-            val newOs = device.androidVersion
             if (!oldOs.isNullOrBlank() && !newOs.isNullOrBlank() && oldOs != newOs) {
                 getString(R.string.device_detail_update_type_major_android, oldOs, newOs)
             } else {

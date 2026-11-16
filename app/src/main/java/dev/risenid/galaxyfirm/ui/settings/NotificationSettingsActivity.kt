@@ -56,6 +56,13 @@ class NotificationSettingsActivity : AppCompatActivity() {
             }
         }
 
+        binding.rowNotifyUpcoming.isChecked = settings.notifyUpcoming
+        binding.rowNotifyUpcoming.onCheckedChangedListener = { _, checked ->
+            if (settings.notifyUpcoming != checked) {
+                settings.notifyUpcoming = checked
+            }
+        }
+
         binding.rowNotifyFailures.isChecked = settings.notifyFailures
         binding.rowNotifyFailures.onCheckedChangedListener = { _, checked ->
             if (settings.notifyFailures != checked) {
@@ -79,6 +86,9 @@ class NotificationSettingsActivity : AppCompatActivity() {
         binding.cardPermissionTip.isVisible = !Permissions.notificationsAllowed(this)
         if (binding.rowNotifyUpdates.isChecked != settings.notifyUpdates) {
             binding.rowNotifyUpdates.isChecked = settings.notifyUpdates
+        }
+        if (binding.rowNotifyUpcoming.isChecked != settings.notifyUpcoming) {
+            binding.rowNotifyUpcoming.isChecked = settings.notifyUpcoming
         }
         if (binding.rowNotifyFailures.isChecked != settings.notifyFailures) {
             binding.rowNotifyFailures.isChecked = settings.notifyFailures

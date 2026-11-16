@@ -3,6 +3,8 @@
     <color name="status_major_container">#335AA9FF</color>
     <color name="status_new">#5BD07A</color>
     <color name="status_new_container">#335BD07A</color>
+    <color name="status_soon">#FFB54D</color>
+    <color name="status_soon_container">#33FFB54D</color>
     <color name="status_failed">#FF6B60</color>
     <color name="status_failed_container">#33FF6B60</color>
     <color name="status_neutral">#AEAEB2</color>

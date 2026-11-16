@@ -26,6 +26,7 @@ A native-looking One UI app built on Samsung's own SESL widget forks.
 - **Track any Galaxy device** by model number (for example `SM-S931B`) and region / CSC code (for example `INS`, `EUX`, `XAA`). The device type (phone, foldable, tablet, watch, buds) is detected from the model number, and there is a picker of common region codes.
 - **Know what's current.** Each device shows its latest build (PDA), the full `PDA/CSC/MODEM` build string, the Android version, the previous build and when it was last checked.
 - **Instant alerts.** Background checks run every 10 minutes, 15 minutes, 30 minutes, 1 hour, 2 hours or 3 hours. You get a notification as soon as a newer build appears.
+- **Coming soon.** Builds that are already on Samsung's servers but not yet rolling out are shown and announced before they arrive, and you are notified again when they go live.
 - **Major or security?** Every update is labelled as a **Major update** (new Android or One UI version), a **Security update** (security-only maintenance release) or a regular **New update**.
 - **Full scan history.** Every check is recorded with the number of devices scanned, new updates and failures. You can filter the list and open any session for per-device results.
 - **One UI throughout.** The app uses a collapsing large title, rounded card lists, sub-tab filters, the One UI switch bar, the bottom tab bar, and light and dark themes.
@@ -40,18 +41,22 @@ The app only tells you that new firmware exists. To install an update, use **Set
 
 The lookup is ported from [Bifrost](https://github.com/zacharee/Bifrost) and lives in [`FusClient.kt`](app/src/main/java/dev/risenid/galaxyfirm/data/net/FusClient.kt) and [`FirmwareClient.kt`](app/src/main/java/dev/risenid/galaxyfirm/data/net/FirmwareClient.kt).
 
-1. **FUS history (primary source).** The app asks Samsung's update service (`neofussvr.sslcs.cdngc.net`) for the model's full firmware history.
-   - It first requests a nonce and decrypts it, then signs the request with the `FUS nonce=…, signature=…` authorisation header.
-   - The `BINARY_INFO` entries are sorted by sequence, beta builds are dropped, and the newest entry is used. This also gives the Android version and release date.
-2. **`version.xml` (fallback).** If FUS returns nothing or fails, the app reads `https://fota-cloud-dn.ospserver.net/firmware/{CSC}/{MODEL}/version.xml` and takes the `<latest>` entry.
+Every check asks both of Samsung's sources at the same time:
+
+1. **Public OTA list (`version.xml`).** `https://fota-cloud-dn.ospserver.net/firmware/{CSC}/{MODEL}/version.xml` is what phones poll for over-the-air updates. Its `<latest>` entry is the build you can actually install, shown as *Available firmware*.
    - If Samsung returns `AccessDenied`, the device is reported as *Model or region not found*.
    - If there is no `<latest>` entry, it is reported as *No firmware published*.
+2. **FUS history.** The app asks Samsung's update service (`neofussvr.sslcs.cdngc.net`) for the model's full firmware history.
+   - It first requests a nonce and decrypts it, then signs the request with the `FUS nonce=…, signature=…` authorisation header.
+   - The `BINARY_INFO` entries are sorted by sequence, beta builds are dropped, and the newest entry is used. This also gives the Android version and release date.
+   - New builds usually appear here days before they roll out over the air. When the FUS build is newer than the public one, it is shown as **Coming soon**.
+   - If a region has no public list, the FUS build is used as the available firmware.
 3. **Normalising the build string.** Build strings are normalised to `PDA/CSC/MODEM/PDA`, as Bifrost does. The PDA part (for example `S931BXXUDDZJB`) is the build that is tracked.
 
-### Deciding "Up to date" vs "New update"
+### Deciding "Up to date", "Coming soon" and "New update"
 
-1. **When you add a device**, the newest build Samsung has becomes its baseline, and the device shows **Up to date**.
-2. **On every scan**, the newest build is compared with the stored one by [`BuildVersion`](app/src/main/java/dev/risenid/galaxyfirm/data/net/BuildVersion.kt).
+1. **When you add a device**, the current public build becomes its baseline, and the device shows **Up to date** (or **Coming soon** if FUS already has something newer).
+2. **On every scan**, the public build is compared with the stored one by [`BuildVersion`](app/src/main/java/dev/risenid/galaxyfirm/data/net/BuildVersion.kt).
    - A device is marked **New update** only if the build is genuinely newer.
    - "Newer" is decided from the last five characters of the PDA, compared in this order: year, month, bootloader, major and build revision.
    - The year comparison handles the alphabet wrapping round.
@@ -61,8 +66,10 @@ The lookup is ported from [Bifrost](https://github.com/zacharee/Bifrost) and liv
    - Otherwise **Security update** if the update-type character (6th from the end) is `S`, which Samsung uses for security-only builds such as `L715FXXS1AZH4`.
    - Otherwise a regular **New update**; `U` builds carry features and fixes as well as the security patch.
 4. **The type is shown** on the device's badge, in an *Update type* row on its detail screen (e.g. *Major update · Android 16 → 17*), in the scan history and in the notification title. The old build moves to *Previous firmware* and the device is listed first.
-5. **The device stays flagged until you tap *Mark as seen***, even if a later check fails.
-6. **Failed lookups** (network errors, an unknown model or region) show as **Failed** with the reason, and are retried on the next scan.
+5. **Coming soon.** When a newer build first shows up in FUS but not on the public list, the device gets a **Coming soon** badge and an *Upcoming firmware* section, classified the same way, and you get a *Major update coming soon* / *Security update coming soon* / *Update coming soon* notification.
+6. **When it reaches the public list**, it becomes a normal **New update** with the usual *update available* notification, and the coming-soon notification is removed.
+7. **The device stays flagged until you tap *Mark as seen***, even if a later check fails.
+8. **Failed lookups** (network errors, an unknown model or region) show as **Failed** with the reason, and are retried on the next scan.
 
 ### Background checks
 
@@ -77,12 +84,12 @@ The lookup is ported from [Bifrost](https://github.com/zacharee/Bifrost) and liv
 | Permission | Used for |
 | --- | --- |
 | `INTERNET`, `ACCESS_NETWORK_STATE` | Querying Samsung's firmware servers |
-| `POST_NOTIFICATIONS` | New firmware and failed-check alerts |
+| `POST_NOTIFICATIONS` | New firmware, coming-soon and failed-check alerts |
 | `SCHEDULE_EXACT_ALARM` | On-time background checks |
 | `RECEIVE_BOOT_COMPLETED` | Restoring the schedule after a restart |
 | `WAKE_LOCK` | Used by WorkManager while a check runs |
 
-- **First launch:** the app asks for notification permission, then suggests setting battery usage to *Unrestricted* in App info. On Samsung phones, background apps are otherwise put to sleep.
+- **First launch:** the app asks for notification permission, then opens the app's battery page so you can choose *Unrestricted*. On Samsung phones, background apps are otherwise put to sleep.
 - **Later:** **Settings → Permissions** shows the state of each permission and links to the right system screen to fix it.
 
 ## Install

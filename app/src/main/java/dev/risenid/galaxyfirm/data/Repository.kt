@@ -11,6 +11,8 @@ import dev.risenid.galaxyfirm.data.model.ScanSession
 import dev.risenid.galaxyfirm.data.model.ScanTrigger
 import dev.risenid.galaxyfirm.data.net.BuildVersion
 import dev.risenid.galaxyfirm.data.net.FirmwareClient
+import dev.risenid.galaxyfirm.data.net.FirmwareException
+import dev.risenid.galaxyfirm.data.net.FirmwareLookup
 import dev.risenid.galaxyfirm.data.net.UpdateType
 import dev.risenid.galaxyfirm.notify.Notifier
 import kotlinx.coroutines.Dispatchers
@@ -118,10 +120,11 @@ class Repository(
             }
             outcomes.forEach { deviceDao.update(it.device) }
             val newCount = outcomes.count { it.changed }
+            val upcomingCount = outcomes.count { it.upcomingChanged }
             val majorCount = outcomes.count { it.changed && it.device.updateType == UpdateType.MAJOR }
             val upToDateCount = outcomes.count { it.sessionStatus == DeviceStatus.UP_TO_DATE }
             val failedCount = outcomes.count { it.sessionStatus == DeviceStatus.FAILED }
-            val primary = (outcomes.firstOrNull { it.changed } ?: outcomes.first()).device
+            val primary = (outcomes.firstOrNull { it.changed } ?: outcomes.firstOrNull { it.upcomingChanged } ?: outcomes.first()).device
             val session = ScanSession(
                 startedAt = startedAt,
                 trigger = trigger,
@@ -131,7 +134,8 @@ class Repository(
                 upToDateCount = upToDateCount,
                 failedCount = failedCount,
                 firstModel = primary.model,
-                firstCsc = primary.csc
+                firstCsc = primary.csc,
+                upcomingCount = upcomingCount
             )
             val sessionId = historyDao.insertSession(session)
             val results = outcomes.map { outcome ->
@@ -144,7 +148,9 @@ class Repository(
                     updateType = if (outcome.changed) outcome.device.updateType else null,
                     firmware = outcome.device.firmware,
                     previousFirmware = outcome.device.previousFirmware,
-                    error = outcome.device.lastError
+                    error = outcome.device.lastError,
+                    upcomingFirmware = outcome.device.upcomingFirmware.takeIf { outcome.upcomingChanged },
+                    upcomingType = outcome.device.upcomingType.takeIf { outcome.upcomingChanged }
                 )
             }
             historyDao.insertResults(results)
@@ -152,6 +158,9 @@ class Repository(
             historyDao.trim(settings.historyLimit)
             if (settings.notifyUpdates) {
                 outcomes.filter { it.changed }.forEach { notifier.notifyUpdate(it.device) }
+            }
+            if (settings.notifyUpcoming) {
+                outcomes.filter { it.upcomingChanged }.forEach { notifier.notifyUpcoming(it.device) }
             }
             if (settings.notifyFailures && failedCount > 0 && trigger == ScanTrigger.AUTO) {
                 notifier.notifyFailures(failedCount)
@@ -169,6 +178,9 @@ class Repository(
         deviceDao.update(outcome.device)
         if (outcome.changed && settings.notifyUpdates) {
             notifier.notifyUpdate(outcome.device)
+        }
+        if (outcome.upcomingChanged && settings.notifyUpcoming) {
+            notifier.notifyUpcoming(outcome.device)
         }
         outcome.device
     }
@@ -199,6 +211,10 @@ class Repository(
                 .put("updateType", device.updateType?.name ?: JSONObject.NULL)
                 .put("lastCheckedAt", device.lastCheckedAt ?: JSONObject.NULL)
                 .put("updateFoundAt", device.updateFoundAt ?: JSONObject.NULL)
+                .put("upcomingFirmware", device.upcomingFirmware ?: JSONObject.NULL)
+                .put("upcomingAndroidVersion", device.upcomingAndroidVersion ?: JSONObject.NULL)
+                .put("upcomingType", device.upcomingType?.name ?: JSONObject.NULL)
+                .put("upcomingFoundAt", device.upcomingFoundAt ?: JSONObject.NULL)
             array.put(item)
         }
         JSONObject()
@@ -239,8 +255,7 @@ class Repository(
             val status = obj.optNullableString("status")
                 ?.let { runCatching { DeviceStatus.valueOf(it) }.getOrNull() }
                 ?: DeviceStatus.UNKNOWN
-            val updateType = obj.optNullableString("updateType")
-                ?.let { runCatching { UpdateType.valueOf(it) }.getOrNull() }
+            val updateType = obj.optNullableUpdateType("updateType")
             val parsed = Device(
                 name = name,
                 model = model,
@@ -254,7 +269,11 @@ class Repository(
                 status = status,
                 updateType = updateType,
                 lastCheckedAt = obj.optNullableLong("lastCheckedAt"),
-                updateFoundAt = obj.optNullableLong("updateFoundAt")
+                updateFoundAt = obj.optNullableLong("updateFoundAt"),
+                upcomingFirmware = obj.optNullableString("upcomingFirmware"),
+                upcomingAndroidVersion = obj.optNullableString("upcomingAndroidVersion"),
+                upcomingType = obj.optNullableUpdateType("upcomingType"),
+                upcomingFoundAt = obj.optNullableLong("upcomingFoundAt")
             )
             deviceDao.insert(parsed.copy(updateType = parsed.updateType ?: inferUpdateType(parsed)))
             imported++
@@ -271,6 +290,7 @@ class Repository(
     fun counts(devices: List<Device>): DeviceCounts = DeviceCounts(
         all = devices.size,
         new = devices.count { it.status == DeviceStatus.NEW_UPDATE },
+        upcoming = devices.count { it.upcomingFirmware != null },
         upToDate = devices.count { it.status == DeviceStatus.UP_TO_DATE },
         failed = devices.count { it.status == DeviceStatus.FAILED }
     )
@@ -290,41 +310,57 @@ class Repository(
     private suspend fun evaluateDevice(device: Device): ScanOutcome {
         val now = System.currentTimeMillis()
         return try {
-            val info = client.fetch(device.model, device.csc)
+            val lookup = client.lookup(device.model, device.csc)
+            val pub = lookup.public ?: throw FirmwareException("No firmware published")
             val stored = device.firmware
             when {
                 stored == null -> {
+                    val up = lookup.upcoming
                     val updated = device.copy(
-                        firmware = info.firmware,
-                        fullFirmware = info.fullFirmware,
-                        androidVersion = info.androidVersion,
+                        firmware = pub.firmware,
+                        fullFirmware = pub.fullFirmware,
+                        androidVersion = pub.androidVersion,
                         status = DeviceStatus.UP_TO_DATE,
                         updateType = null,
                         lastCheckedAt = now,
-                        lastError = null
+                        lastError = null,
+                        upcomingFirmware = up?.firmware,
+                        upcomingAndroidVersion = up?.androidVersion,
+                        upcomingType = up?.let { BuildVersion.classify(it.firmware, pub.firmware, it.androidVersion, pub.androidVersion) },
+                        upcomingFoundAt = up?.let { now }
                     )
-                    ScanOutcome(updated, DeviceStatus.UP_TO_DATE, false)
+                    ScanOutcome(updated, DeviceStatus.UP_TO_DATE, changed = false, upcomingChanged = false)
                 }
-                BuildVersion.isNewer(info.firmware, stored) -> {
-                    val updateType = BuildVersion.classify(
-                        info.firmware,
-                        stored,
-                        info.androidVersion,
-                        device.androidVersion
-                    )
+                BuildVersion.isNewer(pub.firmware, stored) -> {
                     val updated = device.copy(
                         previousFirmware = stored,
                         previousAndroidVersion = device.androidVersion,
-                        firmware = info.firmware,
-                        fullFirmware = info.fullFirmware,
-                        androidVersion = info.androidVersion ?: device.androidVersion,
+                        firmware = pub.firmware,
+                        fullFirmware = pub.fullFirmware,
+                        androidVersion = pub.androidVersion ?: device.androidVersion,
                         status = DeviceStatus.NEW_UPDATE,
-                        updateType = updateType,
+                        updateType = BuildVersion.classify(pub.firmware, stored, pub.androidVersion, device.androidVersion),
                         lastCheckedAt = now,
                         updateFoundAt = now,
                         lastError = null
                     )
-                    ScanOutcome(updated, DeviceStatus.NEW_UPDATE, true)
+                    withUpcoming(updated, device, lookup, now, changed = true)
+                }
+                BuildVersion.isNewer(stored, pub.firmware) -> {
+                    val wasNew = device.status == DeviceStatus.NEW_UPDATE
+                    val updated = device.copy(
+                        firmware = pub.firmware,
+                        fullFirmware = pub.fullFirmware,
+                        androidVersion = pub.androidVersion,
+                        previousFirmware = device.previousFirmware?.takeUnless { it == pub.firmware },
+                        previousAndroidVersion = if (wasNew) null else device.previousAndroidVersion,
+                        status = DeviceStatus.UP_TO_DATE,
+                        updateType = null,
+                        updateFoundAt = if (wasNew) null else device.updateFoundAt,
+                        lastCheckedAt = now,
+                        lastError = null
+                    )
+                    withUpcoming(updated, device, lookup, now, changed = false)
                 }
                 else -> {
                     val nextStatus = if (device.updateFoundAt != null) {
@@ -332,16 +368,16 @@ class Repository(
                     } else {
                         DeviceStatus.UP_TO_DATE
                     }
-                    val same = info.firmware == stored
+                    val same = pub.firmware == stored
                     val updated = device.copy(
-                        fullFirmware = if (same) info.fullFirmware else device.fullFirmware,
-                        androidVersion = if (same) info.androidVersion ?: device.androidVersion else device.androidVersion,
+                        fullFirmware = if (same) pub.fullFirmware else device.fullFirmware,
+                        androidVersion = if (same) pub.androidVersion ?: device.androidVersion else device.androidVersion,
                         status = nextStatus,
                         updateType = if (nextStatus == DeviceStatus.NEW_UPDATE) device.updateType ?: inferUpdateType(device) else null,
                         lastCheckedAt = now,
                         lastError = null
                     )
-                    ScanOutcome(updated, DeviceStatus.UP_TO_DATE, false)
+                    withUpcoming(updated, device, lookup, now, changed = false)
                 }
             }
         } catch (e: Exception) {
@@ -352,18 +388,45 @@ class Repository(
                 lastCheckedAt = now,
                 lastError = e.message ?: "Scan failed"
             )
-            ScanOutcome(updated, DeviceStatus.FAILED, false)
+            ScanOutcome(updated, DeviceStatus.FAILED, changed = false, upcomingChanged = false)
         }
+    }
+
+    private fun withUpcoming(updated: Device, previous: Device, lookup: FirmwareLookup, now: Long, changed: Boolean): ScanOutcome {
+        val current = updated.firmware.orEmpty()
+        val status = if (changed) DeviceStatus.NEW_UPDATE else DeviceStatus.UP_TO_DATE
+        val up = lookup.upcoming?.takeIf { BuildVersion.isNewer(it.firmware, current) }
+        if (up != null) {
+            val isNew = up.firmware != previous.upcomingFirmware
+            val device = updated.copy(
+                upcomingFirmware = up.firmware,
+                upcomingAndroidVersion = up.androidVersion,
+                upcomingType = BuildVersion.classify(up.firmware, current, up.androidVersion, updated.androidVersion),
+                upcomingFoundAt = if (isNew) now else previous.upcomingFoundAt
+            )
+            return ScanOutcome(device, status, changed, upcomingChanged = isNew && up.firmware != previous.firmware)
+        }
+        val keep = !lookup.fusAvailable && previous.upcomingFirmware?.let { BuildVersion.isNewer(it, current) } == true
+        val device = if (keep) {
+            updated
+        } else {
+            updated.copy(upcomingFirmware = null, upcomingAndroidVersion = null, upcomingType = null, upcomingFoundAt = null)
+        }
+        return ScanOutcome(device, status, changed, upcomingChanged = false)
     }
 
     private data class ScanOutcome(
         val device: Device,
         val sessionStatus: DeviceStatus,
-        val changed: Boolean
+        val changed: Boolean,
+        val upcomingChanged: Boolean
     )
 
     private fun JSONObject.optNullableString(key: String): String? =
         if (isNull(key) || !has(key)) null else optString(key, "").takeIf { it.isNotEmpty() }
+
+    private fun JSONObject.optNullableUpdateType(key: String): UpdateType? =
+        optNullableString(key)?.let { runCatching { UpdateType.valueOf(it) }.getOrNull() }
 
     private fun JSONObject.optNullableLong(key: String): Long? =
         if (isNull(key) || !has(key)) null else optLong(key, 0L).takeIf { it > 0L }

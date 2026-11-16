@@ -62,9 +62,14 @@ internal val DeviceType.label: Int
         DeviceType.BUDS -> R.string.device_type_buds
     }
 
-internal fun TextView.bindBadge(status: DeviceStatus, updateType: UpdateType? = null) {
-    val (background, color, label) = when (status) {
-        DeviceStatus.NEW_UPDATE -> when (updateType) {
+internal val Device.showsComingSoon: Boolean
+    get() = upcomingFirmware != null && status != DeviceStatus.NEW_UPDATE && status != DeviceStatus.FAILED
+
+internal fun TextView.bindBadge(device: Device) {
+    val (background, color, label) = if (device.showsComingSoon) {
+        Triple(R.drawable.bg_badge_soon, R.color.status_soon, R.string.device_status_soon)
+    } else when (device.status) {
+        DeviceStatus.NEW_UPDATE -> when (device.updateType) {
             UpdateType.MAJOR -> Triple(R.drawable.bg_badge_major, R.color.status_major, R.string.device_status_major)
             UpdateType.SECURITY -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_security)
             else -> Triple(R.drawable.bg_badge_new, R.color.status_new, R.string.device_status_new)
